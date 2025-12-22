@@ -1,45 +1,30 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import { prisma } from "@/lib/prisma";
-import bcrypt from "bcryptjs";
+import { dbHelpers, verifyPassword } from "@/lib/db";
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
-  adapter: PrismaAdapter(prisma),
+const handler = NextAuth({
   providers: [
     Credentials({
-      name: "Credentials",
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
+        if (!credentials?.email || !credentials?.password) return null;
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
-        });
+        const row = dbHelpers.getUserByEmail.get(credentials.email as string) as any;
 
-        if (!user || !user.password) {
-          return null;
-        }
+        if (!row || !row.password) return null;
 
-        const isValid = await bcrypt.compare(
-          credentials.password as string,
-          user.password
-        );
+        const valid = await verifyPassword(credentials.password as string, row.password);
 
-        if (!isValid) {
-          return null;
-        }
+        if (!valid) return null;
 
         return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
+          id: row.id,
+          name: row.name,
+          email: row.email,
         };
       },
     }),
@@ -52,12 +37,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         ]
       : []),
   ],
-  session: {
-    strategy: "jwt",
-  },
-  pages: {
-    signIn: "/auth/signin",
-  },
+  session: { strategy: "jwt" },
+  pages: { signIn: "/auth/signin" },
   callbacks: {
     async jwt({ token, user }) {
       if (user) token.id = user.id;
@@ -69,3 +50,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
   },
 });
+
+// Exportiere explizit GET und POST (Next.js 15 App Router erfordert das)
+export { handler as GET, handler as POST };

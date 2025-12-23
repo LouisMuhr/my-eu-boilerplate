@@ -24,13 +24,26 @@ export default function SignIn() {
       });
 
       if (res.ok) {
-        // Direkt nach Register einloggen
-        signIn("credentials", { email, password, redirect: false });
+        // Nach erfolgreicher Registrierung direkt einloggen
+        const loginResult = await signIn("credentials", {
+          email,
+          password,
+          redirect: false,
+        });
+
+        if (!loginResult?.error) {
+          window.location.href = "/dashboard"; // Weiterleitung
+        } else {
+          setError(
+            "Registrierung erfolgreich, aber automatischer Login fehlgeschlagen"
+          );
+        }
       } else {
         const data = await res.json();
         setError(data.error || "Registrierung fehlgeschlagen");
       }
     } else {
+      // Login
       const result = await signIn("credentials", {
         email,
         password,
@@ -40,7 +53,7 @@ export default function SignIn() {
       if (result?.error) {
         setError("Falsche E-Mail oder Passwort");
       } else {
-        window.location.href = "/dashboard";
+        window.location.href = "/dashboard"; // Weiterleitung zum Dashboard
       }
     }
 
@@ -55,18 +68,19 @@ export default function SignIn() {
         </h1>
 
         {error && (
-          <p className="text-red-600 text-center mb-4">{error}</p>
+          <p className="text-red-600 text-center mb-4 bg-red-50 dark:bg-red-900/20 p-3 rounded">
+            {error}
+          </p>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {isRegister && (
             <input
               type="text"
-              placeholder="Name"
+              placeholder="Name (optional)"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              required
-              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700"
             />
           )}
           <input
@@ -75,7 +89,7 @@ export default function SignIn() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700"
           />
           <input
             type="password"
@@ -83,24 +97,27 @@ export default function SignIn() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700"
           />
 
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+            className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
             {loading ? "Lädt..." : isRegister ? "Registrieren" : "Anmelden"}
           </button>
         </form>
 
-        <p className="text-center mt-6 text-sm">
+        <p className="text-center mt-6 text-sm text-gray-600 dark:text-gray-400">
           {isRegister ? "Hast du schon einen Account?" : "Noch keinen Account?"}{" "}
           <button
             type="button"
-            onClick={() => setIsRegister(!isRegister)}
-            className="text-blue-600 hover:underline"
+            onClick={() => {
+              setIsRegister(!isRegister);
+              setError("");
+            }}
+            className="text-blue-600 hover:underline font-medium"
           >
             {isRegister ? "Anmelden" : "Registrieren"}
           </button>

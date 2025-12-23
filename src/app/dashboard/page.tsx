@@ -30,14 +30,18 @@ export default async function Dashboard() {
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
             <h2 className="text-xl font-semibold mb-4">Deine Daten</h2>
             <p>
-              E-Mail: {user.email}<br />
-              ID: {user.id}<br />
+              E-Mail: {user.email}
+              <br />
+              ID: {user.id}
+              <br />
               Status: <strong>{user.subscriptionStatus}</strong>
             </p>
           </div>
-
           {/* Interaktive Buttons als Client-Component */}
-          <DashboardActions userId={user.id} />
+          <DashboardActions
+            userId={user.id}
+            subscriptionStatus={user.subscriptionStatus} // ← Prop hinzufügen
+          />
         </div>
       </div>
     </main>

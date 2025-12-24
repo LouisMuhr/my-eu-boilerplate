@@ -27,9 +27,19 @@ export async function POST(req: NextRequest) {
 
     // Neuen User anlegen
     const id = generateId();
-    dbHelpers.createUser.run(id, name || null, email, hashedPassword, null, "free");
+    dbHelpers.createUser.run(
+      id,
+      name || null,
+      email,
+      hashedPassword,
+      null,
+      "free"
+    );
 
-    return NextResponse.json({ success: true, message: "Registrierung erfolgreich" });
+    return NextResponse.json({
+      success: true,
+      message: "Registrierung erfolgreich",
+    });
   } catch (error) {
     console.error("Registrierungs-Fehler:", error);
     return NextResponse.json(

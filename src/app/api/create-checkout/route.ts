@@ -14,7 +14,8 @@ export async function POST(req: Request) {
 
   const { priceId } = await req.json();
 
-  let customerId = (dbHelpers.getUserById.get(session.user.id as string) as any)?.stripeCustomerId;
+  let customerId = (dbHelpers.getUserById.get(session.user.id as string) as any)
+    ?.stripeCustomerId;
 
   if (!customerId) {
     const customer = await stripe.customers.create({
@@ -23,16 +24,15 @@ export async function POST(req: Request) {
     });
     customerId = customer.id;
 
-    dbHelpers.updateUserSubscription.run({
-      id: session.user.id,
-      stripeCustomerId: customerId,
-      subscriptionStatus: "free",
-    });
+    dbHelpers.updateUserSubscription.run(
+      customerId, // 1. ? -> stripeCustomerId
+      "free", // 2. ? -> subscriptionStatus
+      session.user.id // 3. ? -> id
+    );
   }
-
   const checkoutSession = await stripe.checkout.sessions.create({
     customer: customerId,
-    mode: priceId.includes("recurring") ? "subscription" : "payment",
+    mode: priceId === process.env.STRIPE_PRICE_SUBSCRIPTION ? "subscription" : "payment", // ← hier der Check
     payment_method_types: ["card"],
     line_items: [{ price: priceId, quantity: 1 }],
     success_url: `${process.env.NEXT_PUBLIC_URL}/dashboard?success=true`,

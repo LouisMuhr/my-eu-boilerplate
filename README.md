@@ -2,6 +2,47 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+First, go to your Windows Explorer and create a new Folder, whereever you want it.
+
+Then go to my GitHub and press on the green button "<> Code" and copy the HTTPS link. 
+Now go to your newly created folder and click on your path.
+![alt text](image.png)
+
+
+Here you can enter the CLI by typing cmd and pressing ENTER.
+
+After opening your CLI, you type "git clone LINK" and enter the HTTPS-Link you just copied and press ENTER. After a few seconds of downloading my repository, just type code . and Visual Studio Code will open itself.
+If you made it so far, you have to open another CLI in VSC and navigate to my project folder with and install the needed instances
+```bash
+cd my-eu-boilerplate
+npm install
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 First, run the development server:
 
 ```bash

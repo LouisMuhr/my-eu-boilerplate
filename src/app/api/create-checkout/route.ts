@@ -1,21 +1,21 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { auth } from "@/app/api/auth/[...nextauth]/route";
-import { dbHelpers, UserRow } from "@/lib/db";
+import { dbHelpers } from "@/lib/db";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST(req: Request) {
   const session = await auth();
-  if (!session?.user?.id)
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Nicht autorisiert" }, { status: 401 });
+  }
 
   const { priceId } = await req.json();
 
-  const userRow = dbHelpers.getUserById.get(session.user.id) as
-    | UserRow
-    | undefined;
-  let customerId = userRow?.stripeCustomerId;
+  let customerId = (dbHelpers.getUserById.get(session.user.id as string) as any)
+    ?.stripeCustomerId;
 
   if (!customerId) {
     const customer = await stripe.customers.create({
@@ -24,24 +24,19 @@ export async function POST(req: Request) {
     });
     customerId = customer.id;
 
-    dbHelpers.updateUserSubscription.run({
-      id: session.user.id,
-      stripeCustomerId: customerId,
-      subscriptionStatus: "free",
-    });
+    dbHelpers.updateUserSubscription.run(
+      customerId, // 1. ? -> stripeCustomerId
+      "free", // 2. ? -> subscriptionStatus
+      session.user.id // 3. ? -> id
+    );
   }
-
   const checkoutSession = await stripe.checkout.sessions.create({
     customer: customerId,
-    mode: priceId.includes("sub") ? "subscription" : "payment", // automatische Erkennung oder explizit
+    mode: priceId === process.env.STRIPE_PRICE_SUBSCRIPTION ? "subscription" : "payment", // ← hier der Check
     payment_method_types: ["card"],
     line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${
-      process.env.NEXT_PUBLIC_URL || "http://localhost:3000"
-    }/dashboard?success=true`,
-    cancel_url: `${
-      process.env.NEXT_PUBLIC_URL || "http://localhost:3000"
-    }/dashboard?canceled=true`,
+    success_url: `${process.env.NEXT_PUBLIC_URL}/dashboard?success=true`,
+    cancel_url: `${process.env.NEXT_PUBLIC_URL}/dashboard?canceled=true`,
     metadata: { userId: session.user.id },
   });
 

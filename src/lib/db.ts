@@ -97,6 +97,10 @@ export const dbHelpers = {
   getSession: db.prepare(`
     SELECT * FROM sessions WHERE sessionToken = ?
   `),
+
+  getUserByStripeCustomerId: db.prepare(`
+  SELECT * FROM users WHERE stripeCustomerId = ?
+`),
 };
 
 // =============================================
@@ -110,7 +114,10 @@ export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 12);
 }
 
-export async function verifyPassword(password: string, hash: string): Promise<boolean> {
+export async function verifyPassword(
+  password: string,
+  hash: string
+): Promise<boolean> {
   return bcrypt.compare(password, hash);
 }
 

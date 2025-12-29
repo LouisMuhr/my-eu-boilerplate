@@ -3,19 +3,16 @@ import { redirect } from "next/navigation";
 import { dbHelpers } from "@/lib/db";
 import DashboardActions from "../../components/DashboardActions"; // ← Client-Component
 
+
 export default async function Dashboard() {
   const session = await auth();
 
-  if (!session?.user) {
-    redirect("/auth/signin");
-  }
-
-  const userRow = dbHelpers.getUserById.get(session.user.id as string) as any;
+  const userRow = dbHelpers.getUserById.get(session!.user.id) as any;
 
   const user = {
-    id: session.user.id as string,
-    name: session.user.name || null,
-    email: session.user.email || null,
+    id: session!.user.id as string,
+    name: session!.user.name || null,
+    email: session!.user.email || null,
     subscriptionStatus: userRow?.subscriptionStatus || "free",
   };
 

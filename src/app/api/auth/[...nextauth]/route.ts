@@ -1,10 +1,13 @@
+// src/app/api/auth/[...nextauth]/route.ts
 import NextAuth from "next-auth";
+import { authConfig } from "@/auth.config"; // <-- Import der neuen Config
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import { dbHelpers, verifyPassword } from "@/lib/db";
 
-// Vollständige NextAuth-Konfiguration
+// Wir mergen die Config mit den Providern
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
   providers: [
     Credentials({
       name: "Credentials",
@@ -13,30 +16,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          console.log("Authorize: Fehlende Credentials");
-          return null;
-        }
+        if (!credentials?.email || !credentials?.password) return null;
 
         const row = dbHelpers.getUserByEmail.get(credentials.email as string) as any;
-
-        if (!row || !row.password) {
-          console.log("Authorize: User nicht gefunden oder kein Passwort");
-          return null;
-        }
+        if (!row || !row.password) return null;
 
         const valid = await verifyPassword(credentials.password as string, row.password);
-
-        if (!valid) {
-          console.log("Authorize: Passwort falsch");
-          return null;
-        }
-
-        console.log("Authorize erfolgreich – Return:", {
-          id: row.id,
-          name: row.name,
-          email: row.email,
-        });
+        if (!valid) return null;
 
         return {
           id: row.id,
@@ -54,36 +40,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         ]
       : []),
   ],
-
-  session: {
-    strategy: "jwt",
-  },
-
-  pages: {
-    signIn: "/auth/signin",
-  },
-
-  callbacks: {
-    async jwt({ token, user }) {
-      console.log("JWT Callback – user:", user);
-      if (user) {
-        token.id = user.id;
-      }
-      return token;
-    },
-
-    async session({ session, token }) {
-      console.log("SESSION CALLBACK AUFGERUFEN – token:", token);
-      console.log("SESSION CALLBACK – session vor:", session);
-      if (token?.id) {
-        session.user.id = token.id as string;
-      }
-      console.log("SESSION CALLBACK – session nach:", session);
-      return session;
-    },
-  },
-
-  secret: process.env.NEXTAUTH_SECRET,
 });
 
 export const GET = handlers.GET;

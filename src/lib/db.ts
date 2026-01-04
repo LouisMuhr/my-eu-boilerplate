@@ -36,6 +36,12 @@ db.exec(`
     expires DATETIME NOT NULL,
     FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
   );
+    CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id TEXT PRIMARY KEY,
+    email TEXT NOT NULL,
+    token TEXT UNIQUE NOT NULL,
+    expires DATETIME NOT NULL
+  );
 `);
 
 // Sicherheits-Migration: Spalten nur hinzufügen, wenn sie fehlen
@@ -59,6 +65,7 @@ addColumnIfNotExists("users", "subscriptionStatus", "TEXT DEFAULT 'free'");
 // Prepared Statements (Helpers)
 // =============================================
 export const dbHelpers = {
+  
   // User erstellen
   createUser: db.prepare(`
     INSERT INTO users (id, name, email, password, stripeCustomerId, subscriptionStatus)
@@ -101,6 +108,21 @@ export const dbHelpers = {
   getUserByStripeCustomerId: db.prepare(`
   SELECT * FROM users WHERE stripeCustomerId = ?
 `),
+  getAllUsers: db.prepare("SELECT * FROM users"),
+
+  createResetToken: db.prepare(`
+    INSERT INTO password_reset_tokens (id, email, token, expires)
+    VALUES (?, ?, ?, ?)
+  `),
+  getResetTokenByToken: db.prepare(`
+    SELECT * FROM password_reset_tokens WHERE token = ?
+  `),
+  deleteResetToken: db.prepare(`
+    DELETE FROM password_reset_tokens WHERE id = ?
+  `),
+  updateUserPassword: db.prepare(`
+    UPDATE users SET password = ? WHERE email = ?
+  `)
 };
 
 // =============================================
@@ -132,6 +154,7 @@ export interface UserRow {
   stripeCustomerId: string | null;
   subscriptionStatus: string | null;
 }
+
 
 // =============================================
 // Export der DB-Instanz (falls irgendwo direkt benötigt)

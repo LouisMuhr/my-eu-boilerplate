@@ -1,44 +1,41 @@
-import { NextResponse } from "next/server";
-import Stripe from "stripe";
-import { auth } from "@/auth";
-import { dbHelpers } from "@/lib/db";
+// Datei: src/app/api/create-checkout/route.ts
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+import { NextResponse } from "next/server";
+import { auth } from "@/auth";
+import Stripe from "stripe";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2025-12-15.clover",
+});
 
 export async function POST(req: Request) {
-  const session = await auth();
+  try {
+    const session = await auth();
+    const { priceId } = await req.json();
 
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Nicht autorisiert" }, { status: 401 });
-  }
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Nicht autorisiert" }, { status: 401 });
+    }
 
-  const { priceId } = await req.json();
-
-  let customerId = (dbHelpers.getUserById.get(session.user.id as string) as any)
-    ?.stripeCustomerId;
-
-  if (!customerId) {
-    const customer = await stripe.customers.create({
-      email: session.user.email || undefined,
-      metadata: { userId: session.user.id },
+    // Wir erstellen eine Stripe Checkout Session
+    const checkoutSession = await stripe.checkout.sessions.create({
+      mode: "subscription", // Oder 'payment' für Einmalzahlung
+      payment_method_types: ["card", "paypal"],
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: `${process.env.NEXT_PUBLIC_URL}/dashboard?success=true`,
+      cancel_url: `${process.env.NEXT_PUBLIC_URL}/dashboard?canceled=true`,
+      customer_email: session.user.email!,
+      client_reference_id: session.user.id, // EXTREM WICHTIG für den Webhook-Match!
+      subscription_data: {
+          metadata: {
+              userId: session.user.id
+          }
+      }
     });
-    customerId = customer.id;
 
-    dbHelpers.updateUserSubscription.run(
-      customerId, // 1. ? -> stripeCustomerId
-      "free", // 2. ? -> subscriptionStatus
-      session.user.id // 3. ? -> id
-    );
+    return NextResponse.json({ url: checkoutSession.url });
+  } catch (error: any) {
+    console.error("Stripe Fehler:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
   }
-  const checkoutSession = await stripe.checkout.sessions.create({
-    customer: customerId,
-    mode: priceId === process.env.STRIPE_PRICE_SUBSCRIPTION ? "subscription" : "payment", // ← hier der Check
-    payment_method_types: ["card"],
-    line_items: [{ price: priceId, quantity: 1 }],
-    success_url: `${process.env.NEXT_PUBLIC_URL}/dashboard?success=true`,
-    cancel_url: `${process.env.NEXT_PUBLIC_URL}/dashboard?canceled=true`,
-    metadata: { userId: session.user.id },
-  });
-
-  return NextResponse.json({ url: checkoutSession.url });
 }

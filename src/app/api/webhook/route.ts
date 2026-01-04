@@ -1,69 +1,63 @@
-import { NextResponse } from "next/server";
-import Stripe from "stripe";
-import { dbHelpers } from "@/lib/db";
+// Datei: src/app/api/webhook/route.ts
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+import { NextResponse } from 'next/server';
+import Stripe from 'stripe';
+import { dbHelpers } from '@/lib/db';
+import { headers } from 'next/headers';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2025-12-15.clover", // Nutze die stabile Version
+});
+
+const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
 export async function POST(req: Request) {
   const body = await req.text();
-  const sig = req.headers.get("stripe-signature")!;
+  const signature = (await headers()).get('stripe-signature') as string;
 
-  let event;
+  let event: Stripe.Event;
 
   try {
-    event = stripe.webhooks.constructEvent(
-      body,
-      sig,
-      process.env.STRIPE_WEBHOOK_SECRET!
-    );
-  } catch (err) {
-    console.log("Webhook signature verification failed:", err);
-    return NextResponse.json(
-      { error: "Webhook signature verification failed" },
-      { status: 400 }
-    );
+    event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+  } catch (err: any) {
+    console.error(`❌ Webhook-Signatur fehlgeschlagen: ${err.message}`);
+    return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object as any;
-    const userId = session.metadata.userId;
+  const session = event.data.object as Stripe.Checkout.Session;
 
-    if (session.mode === "subscription") {
-      dbHelpers.updateUserSubscription.run({
-        id: userId,
-        stripeCustomerId: session.customer,
-        subscriptionStatus: "active",
-      });
-    } else {
-      dbHelpers.updateUserSubscription.run({
-        id: userId,
-        stripeCustomerId: session.customer,
-        subscriptionStatus: "premium_one_time",
-      });
-    }
-  }
+  // --- LOGIK-ZENTRALE ---
+  switch (event.type) {
+    // 1. Der User hat den Checkout erfolgreich abgeschlossen
+    case 'checkout.session.completed':
+      const customerId = session.customer as string;
+      const userId = session.client_reference_id; // Wir geben die ID beim Checkout mit!
 
-  if (event.type === "customer.subscription.deleted") {
-    const subscription = event.data.object as any;
-    const customerId = subscription.customer as string;
+      if (userId) {
+        console.log(`✅ Zahlung erfolgreich für User: ${userId}`);
+        dbHelpers.updateUserStripe.run(customerId, 'active', userId);
+      }
+      break;
 
-    // Neue Prepared Statement in db.ts hinzufügen (siehe unten)
-    const user = dbHelpers.getUserByStripeCustomerId.get(customerId) as any;
+    // 2. Das Abonnement wurde aktualisiert (z.B. Upgrade/Downgrade)
+    case 'customer.subscription.updated':
+      const subscription = event.data.object as Stripe.Subscription;
+      dbHelpers.updateUserSubscription.run(
+        subscription.status === 'active' ? 'active' : 'past_due',
+        subscription.customer as string
+      );
+      break;
 
-    if (user) {
-      dbHelpers.updateUserSubscription.run({
-        id: user.id,
-        stripeCustomerId: customerId,
-        subscriptionStatus: "canceled",
-      });
-    }
+    // 3. Das Abonnement wurde gelöscht/gekündigt
+    case 'customer.subscription.deleted':
+      const deletedSub = event.data.object as Stripe.Subscription;
+      console.log(`❌ Abo beendet für Kunde: ${deletedSub.customer}`);
+      dbHelpers.updateUserSubscription.run('free', deletedSub.customer as string);
+      break;
+
+    default:
+      console.log(`ℹ️ Unbehandelter Event-Typ: ${event.type}`);
   }
 
   return NextResponse.json({ received: true });
 }
-
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};

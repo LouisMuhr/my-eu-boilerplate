@@ -122,7 +122,12 @@ export const dbHelpers = {
   `),
   updateUserPassword: db.prepare(`
     UPDATE users SET password = ? WHERE email = ?
-  `)
+  `),
+  updateUserStripe: db.prepare(`
+    UPDATE users 
+    SET stripeCustomerId = ?, subscriptionStatus = ? 
+    WHERE id = ?
+  `),
 };
 
 // =============================================

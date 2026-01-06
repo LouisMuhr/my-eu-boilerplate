@@ -1,12 +1,17 @@
-/**
- * Brutale Einfachheit: Wir definieren Admins über die E-Mail.
- * Später kannst du ein "role" Feld in der DB hinzufügen.
- */
-export const ADMIN_EMAILS = [
-    "louismuhr8@gmail.com", // Ersetze das durch deine echte E-Mail
-  ];
+// Datei: src/lib/admin.ts
+
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+
+// Trag hier deine E-Mail ein!
+const ADMIN_EMAILS = ["louismuhr8@gmail.com"]; 
+
+export async function requireAdmin() {
+  const session = await auth();
   
-  export function isAdmin(email?: string | null) {
-    if (!email) return false;
-    return ADMIN_EMAILS.includes(email);
+  if (!session?.user?.email || !ADMIN_EMAILS.includes(session.user.email)) {
+    return redirect("/dashboard"); // Unbefugte fliegen raus
   }
+  
+  return session;
+}

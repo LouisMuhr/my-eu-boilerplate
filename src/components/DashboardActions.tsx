@@ -15,7 +15,8 @@ import {
   ShieldAlert,
   User,
   Save,
-  ArrowRight
+  ArrowRight,
+  CalendarX
 } from "lucide-react";
 
 interface DashboardActionsProps {
@@ -23,6 +24,8 @@ interface DashboardActionsProps {
   userName: string;
   userEmail: string;
   subscriptionStatus: string;
+  cancelAtPeriodEnd: boolean;
+  currentPeriodEnd: string | null;
   hasStripeCustomer: boolean;
 }
 
@@ -31,6 +34,8 @@ export default function DashboardActions({
   userName,
   userEmail,
   subscriptionStatus,
+  cancelAtPeriodEnd,
+  currentPeriodEnd,
   hasStripeCustomer
 }: DashboardActionsProps) {
   const [loadingPortal, setLoadingPortal] = useState(false);
@@ -121,22 +126,18 @@ export default function DashboardActions({
       setLoadingExport(false);
     }
   };
-
+  console.log("currentPeriodEnd:", currentPeriodEnd);
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       
       {/* --- ABRECHNUNG & STATUS --- */}
-      <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden flex flex-col group hover:shadow-xl hover:shadow-blue-500/5 transition-all duration-500">
-        <div className="p-8 border-b border-gray-50 dark:border-gray-800 bg-gradient-to-br from-blue-50/50 to-transparent dark:from-blue-900/10 flex items-center justify-between">
+      <div className="bg-white dark:bg-gray-900 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden flex flex-col hover:shadow-xl transition-all duration-500">
+        <div className="p-8 border-b border-gray-50 dark:border-gray-800 bg-gradient-to-br from-blue-50/30 to-transparent flex items-center justify-between">
           <div className="space-y-1">
-            <h3 className="font-black flex items-center gap-2 text-gray-900 dark:text-white uppercase tracking-tighter">Abrechnung</h3>
-            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Finanzen & Abonnements</p>
+            <h3 className="font-black uppercase tracking-tighter">Abrechnung</h3>
+            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Plan & Status</p>
           </div>
-          {subscriptionStatus !== 'free' && (
-            <div className="h-10 w-10 rounded-xl bg-green-50 dark:bg-green-900/20 flex items-center justify-center text-green-600 border border-green-100 dark:border-green-800">
-              <CheckCircle2 className="w-6 h-6" />
-            </div>
-          )}
+          <CreditCard className="w-6 h-6 text-blue-600" />
         </div>
         
         <div className="p-8 space-y-6 flex-1 flex flex-col justify-center">
@@ -144,39 +145,52 @@ export default function DashboardActions({
             <button
               onClick={handleCheckout}
               disabled={loadingCheckout}
-              className="w-full flex items-center justify-between p-6 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-[2rem] text-white shadow-xl shadow-blue-500/25 hover:shadow-blue-500/40 hover:-translate-y-1 transition-all disabled:opacity-50 group/btn"
+              className="w-full flex items-center justify-between p-6 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-[2.5rem] text-white shadow-xl shadow-blue-500/20 hover:scale-[1.02] transition-all disabled:opacity-50 group"
             >
               <div className="text-left font-bold">
-                <p className="text-lg">Pro Plan aktivieren</p>
-                <p className="text-xs opacity-80">Voller Zugriff für 9.99€/Monat</p>
+                <p className="text-lg">Upgrade auf Pro</p>
+                <p className="text-xs opacity-70">Schalte alle Features frei</p>
               </div>
-              <div className="h-12 w-12 bg-white/20 rounded-2xl backdrop-blur-md flex items-center justify-center group-hover/btn:scale-110 transition-transform">
+              <div className="h-12 w-12 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
                 {loadingCheckout ? <Loader2 className="w-6 h-6 animate-spin" /> : <Zap className="w-6 h-6 fill-white" />}
               </div>
             </button>
           ) : (
             <div className="space-y-4">
-               <div className="p-5 bg-green-50/50 dark:bg-green-900/10 rounded-3xl border border-green-100 dark:border-green-800/30 flex items-center gap-4">
-                  <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-2xl flex items-center justify-center text-green-600">
-                     <ShieldCheck className="w-5 h-5" />
+               {/* DIESER BLOCK ZEIGT DEN KÜNDIGUNGS-STATUS */}
+               {cancelAtPeriodEnd ? (
+                  <div className="p-6 bg-amber-50 dark:bg-amber-900/10 rounded-[2rem] border border-amber-200 dark:border-amber-800/30 flex items-center gap-4 animate-in fade-in duration-700">
+                    <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/40 rounded-2xl flex items-center justify-center text-amber-600">
+                      <CalendarX className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <p className="text-base font-black text-amber-800 dark:text-amber-400">Abo gekündigt</p>
+                      <p className="text-[10px] text-amber-700/60 font-bold uppercase tracking-tight">Zugriff endet am {currentPeriodEnd}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-black text-green-800 dark:text-green-400">Abo ist aktiv</p>
-                    <p className="text-[10px] text-green-700/60 dark:text-green-500/60 font-bold uppercase">Nächste Abrechnung folgt automatisch</p>
+               ) : (
+                  <div className="p-6 bg-green-50/50 dark:bg-green-900/10 rounded-[2rem] border border-green-100 dark:border-green-800/30 flex items-center gap-4">
+                    <div className="w-12 h-12 bg-green-100 dark:bg-green-900/40 rounded-2xl flex items-center justify-center text-green-600">
+                      <CheckCircle2 className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <p className="text-base font-black text-green-800 dark:text-green-400">Abo ist aktiv</p>
+                      <p className="text-[10px] text-green-700/60 font-bold uppercase tracking-tight">Verlängerung am {currentPeriodEnd}</p>
+                    </div>
                   </div>
-               </div>
+               )}
                
                {hasStripeCustomer && (
                  <button
                    onClick={handleOpenPortal}
                    disabled={loadingPortal}
-                   className="w-full flex items-center justify-between p-5 bg-white dark:bg-gray-800 rounded-3xl border border-gray-200 dark:border-gray-700 hover:border-blue-500 transition-all group/portal"
+                   className="w-full flex items-center justify-between p-5 bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 hover:border-blue-500 hover:bg-blue-50/30 transition-all group"
                  >
-                   <div className="text-left">
-                     <p className="font-black text-sm dark:text-white group-hover/portal:text-blue-600 transition-colors">Zahlungsdetails verwalten</p>
-                     <p className="text-xs text-gray-400 font-medium tracking-tight">Rechnungen, Kündigung & Karten</p>
+                   <div className="text-left font-bold">
+                     <p className="text-sm group-hover:text-blue-600 transition-colors">Stripe Portal</p>
+                     <p className="text-[10px] text-gray-400 uppercase tracking-widest">Kündigen & Rechnungen</p>
                    </div>
-                   <div className="h-10 w-10 rounded-xl bg-gray-50 dark:bg-gray-900 flex items-center justify-center group-hover/portal:text-blue-600 transition-colors">
+                   <div className="h-10 w-10 rounded-xl bg-gray-50 dark:bg-gray-900 flex items-center justify-center text-gray-400 group-hover:text-blue-600">
                      {loadingPortal ? <Loader2 className="w-5 h-5 animate-spin" /> : <ExternalLink className="w-5 h-5" />}
                    </div>
                  </button>

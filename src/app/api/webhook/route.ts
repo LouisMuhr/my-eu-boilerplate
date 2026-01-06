@@ -5,8 +5,9 @@ import Stripe from 'stripe';
 import { dbHelpers } from '@/lib/db';
 import { headers } from 'next/headers';
 
+// Wir nutzen eine stabile API-Version. "Clover" existiert nicht offiziell.
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-12-15.clover", // Nutze die stabile Version
+  apiVersion: '2025-12-15.clover', 
 });
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -20,43 +21,80 @@ export async function POST(req: Request) {
   try {
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
   } catch (err: any) {
-    console.error(`❌ Webhook-Signatur fehlgeschlagen: ${err.message}`);
+    console.error(`❌ Webhook-Fehler: ${err.message}`);
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 
-  const session = event.data.object as Stripe.Checkout.Session;
+  console.log(`🔔 Event empfangen: ${event.type}`);
 
-  // --- LOGIK-ZENTRALE ---
   switch (event.type) {
-    // 1. Der User hat den Checkout erfolgreich abgeschlossen
-    case 'checkout.session.completed':
+    
+    // 1. Erstkauf
+    case 'checkout.session.completed': {
+      const session = event.data.object as Stripe.Checkout.Session;
       const customerId = session.customer as string;
-      const userId = session.client_reference_id; // Wir geben die ID beim Checkout mit!
+      const userId = session.client_reference_id; 
 
       if (userId) {
-        console.log(`✅ Zahlung erfolgreich für User: ${userId}`);
         dbHelpers.updateUserStripe.run(customerId, 'active', userId);
+        console.log(`✅ Abo aktiviert für User: ${userId}`);
       }
       break;
+    }
 
-    // 2. Das Abonnement wurde aktualisiert (z.B. Upgrade/Downgrade)
-    case 'customer.subscription.updated':
-      const subscription = event.data.object as Stripe.Subscription;
+    // 2. Abo-Update (Kündigung, Verlängerung)
+    case 'customer.subscription.updated': {
+      // Wir casten zu 'any', um TypeScript-Fehler bei properties zu umgehen, 
+      // die zur Laufzeit definitiv existieren.
+      const subscription = event.data.object as any;
+      const customerId = subscription.customer as string;
+      
+      const status = subscription.status;
+      let dbStatus = 'free';
+      if (status === 'active' || status === 'trialing') dbStatus = 'active';
+      if (status === 'past_due') dbStatus = 'past_due';
+
+      // Zugriff über 'any' verhindert den "Property does not exist" Fehler
+      const cancelAtPeriodEnd = subscription.cancel_at_period_end ? 1 : 0;
+      
+      // Umrechnung: Sekunden (Stripe) * 1000 = Millisekunden (JS)
+      const currentPeriodEnd = new Date(subscription.current_period_end * 1000).toISOString();
+
+      // Update in der DB (4 Parameter)
       dbHelpers.updateUserSubscription.run(
-        subscription.status === 'active' ? 'active' : 'past_due',
-        subscription.customer as string
+        dbStatus, 
+        cancelAtPeriodEnd, 
+        currentPeriodEnd, 
+        customerId
       );
+      
+      console.log(`🔄 Update ${customerId}: ${dbStatus}, Ende: ${currentPeriodEnd}`);
       break;
+    }
 
-    // 3. Das Abonnement wurde gelöscht/gekündigt
-    case 'customer.subscription.deleted':
-      const deletedSub = event.data.object as Stripe.Subscription;
-      console.log(`❌ Abo beendet für Kunde: ${deletedSub.customer}`);
-      dbHelpers.updateUserSubscription.run('free', deletedSub.customer as string);
+    // 3. Abo gelöscht
+    case 'customer.subscription.deleted': {
+      const subscription = event.data.object as any;
+      dbHelpers.updateUserSubscription.run('free', 0, null, subscription.customer as string);
+      console.log(`❌ Abo gelöscht: ${subscription.customer}`);
       break;
+    }
 
-    default:
-      console.log(`ℹ️ Unbehandelter Event-Typ: ${event.type}`);
+    // 4. Rückerstattung (Refund)
+    case 'charge.refunded': {
+      const charge = event.data.object as Stripe.Charge;
+      if (charge.customer) {
+        // Bei Refund sofort Zugang weg -> Datum ist null
+        dbHelpers.updateUserSubscription.run(
+            'free', 
+            0,      
+            null,   
+            charge.customer as string
+        );
+        console.log(`💰 Rückerstattung erfolgt. Zugang entzogen.`);
+      }
+      break;
+    }
   }
 
   return NextResponse.json({ received: true });

@@ -1,3 +1,5 @@
+// Datei: src/lib/db.ts
+
 import Database from "better-sqlite3";
 import bcrypt from "bcryptjs";
 import { randomUUID } from "crypto";
@@ -14,7 +16,7 @@ if (!fs.existsSync(dbPath)) {
   fs.writeFileSync(dbPath, "");
 }
 
-const db = new Database(dbPath, { verbose: console.log }); // verbose für Debugging (kann später entfernt werden)
+const db = new Database(dbPath, { verbose: console.log });
 
 // =============================================
 // Tabellen + Spalten anlegen / migrieren
@@ -26,7 +28,9 @@ db.exec(`
     email TEXT UNIQUE NOT NULL,
     password TEXT,
     stripeCustomerId TEXT,
-    subscriptionStatus TEXT DEFAULT 'free'
+    subscriptionStatus TEXT DEFAULT 'free',
+    cancelAtPeriodEnd INTEGER DEFAULT 0,
+    currentPeriodEnd TEXT
   );
 
   CREATE TABLE IF NOT EXISTS sessions (
@@ -36,7 +40,8 @@ db.exec(`
     expires DATETIME NOT NULL,
     FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
   );
-    CREATE TABLE IF NOT EXISTS password_reset_tokens (
+
+  CREATE TABLE IF NOT EXISTS password_reset_tokens (
     id TEXT PRIMARY KEY,
     email TEXT NOT NULL,
     token TEXT UNIQUE NOT NULL,
@@ -44,7 +49,7 @@ db.exec(`
   );
 `);
 
-// Sicherheits-Migration: Spalten nur hinzufügen, wenn sie fehlen
+// Sicherheits-Migration: Fügt Spalten hinzu, falls sie in einer alten Version fehlen
 const addColumnIfNotExists = (table: string, column: string, type: string) => {
   try {
     db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${type};`);
@@ -53,80 +58,82 @@ const addColumnIfNotExists = (table: string, column: string, type: string) => {
     if (e.message.includes("duplicate column name")) {
       // Spalte existiert bereits → ignorieren
     } else {
-      throw e; // Andere Fehler weiterwerfen
+      console.warn(`Hinweis bei Migration ${table}.${column}: ${e.message}`);
     }
   }
 };
 
 addColumnIfNotExists("users", "stripeCustomerId", "TEXT");
 addColumnIfNotExists("users", "subscriptionStatus", "TEXT DEFAULT 'free'");
+addColumnIfNotExists("users", "cancelAtPeriodEnd", "INTEGER DEFAULT 0");
+addColumnIfNotExists("users", "currentPeriodEnd", "TEXT");
 
 // =============================================
 // Prepared Statements (Helpers)
 // =============================================
 export const dbHelpers = {
   
-  // User erstellen
+  // --- USER CORE ---
   createUser: db.prepare(`
     INSERT INTO users (id, name, email, password, stripeCustomerId, subscriptionStatus)
     VALUES (?, ?, ?, ?, ?, ?)
   `),
 
-  // User per E-Mail suchen
-  getUserByEmail: db.prepare(`
-    SELECT * FROM users WHERE email = ?
+  getUserByEmail: db.prepare(`SELECT * FROM users WHERE email = ?`),
+  getUserById: db.prepare(`SELECT * FROM users WHERE id = ?`),
+  deleteUser: db.prepare(`DELETE FROM users WHERE id = ?`),
+  getAllUsers: db.prepare(`SELECT * FROM users`),
+  
+  updateUserProfile: db.prepare(`
+    UPDATE users SET name = ? WHERE id = ?
   `),
 
-  // User per ID suchen
-  getUserById: db.prepare(`
-    SELECT * FROM users WHERE id = ?
-  `),
-
-  // User löschen
-  deleteUser: db.prepare(`
-    DELETE FROM users WHERE id = ?
-  `),
-
-  // Subscription-Status aktualisieren
-  updateUserSubscription: db.prepare(`
+  // --- STRIPE & SUBSCRIPTIONS ---
+  
+  // Initiales Setzen nach Checkout
+  updateUserStripe: db.prepare(`
     UPDATE users 
     SET stripeCustomerId = ?, subscriptionStatus = ? 
     WHERE id = ?
   `),
 
-  // Session erstellen (wird von NextAuth intern genutzt)
+  // Detailliertes Update für Webhooks (inkl. Kündigungs-Status)
+  updateUserSubscription: db.prepare(`
+    UPDATE users 
+    SET subscriptionStatus = ?, 
+        cancelAtPeriodEnd = ?, 
+        currentPeriodEnd = ? 
+    WHERE stripeCustomerId = ?
+  `),
+
+  getUserByStripeCustomerId: db.prepare(`
+    SELECT * FROM users WHERE stripeCustomerId = ?
+  `),
+
+  // --- NEXTAUTH SESSIONS ---
   createSession: db.prepare(`
     INSERT INTO sessions (id, sessionToken, userId, expires)
     VALUES (?, ?, ?, ?)
   `),
 
-  // Session suchen
-  getSession: db.prepare(`
-    SELECT * FROM sessions WHERE sessionToken = ?
-  `),
+  getSession: db.prepare(`SELECT * FROM sessions WHERE sessionToken = ?`),
 
-  getUserByStripeCustomerId: db.prepare(`
-  SELECT * FROM users WHERE stripeCustomerId = ?
-`),
-  getAllUsers: db.prepare("SELECT * FROM users"),
-
+  // --- PASSWORD RESET ---
   createResetToken: db.prepare(`
     INSERT INTO password_reset_tokens (id, email, token, expires)
     VALUES (?, ?, ?, ?)
   `),
+  
   getResetTokenByToken: db.prepare(`
     SELECT * FROM password_reset_tokens WHERE token = ?
   `),
+  
   deleteResetToken: db.prepare(`
     DELETE FROM password_reset_tokens WHERE id = ?
   `),
+  
   updateUserPassword: db.prepare(`
     UPDATE users SET password = ? WHERE email = ?
-  `),
-  updateUserStripe: db.prepare(`
-    UPDATE users 
-    SET stripeCustomerId = ?, subscriptionStatus = ? 
-    WHERE id = ?
   `),
 };
 
@@ -141,15 +148,12 @@ export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 12);
 }
 
-export async function verifyPassword(
-  password: string,
-  hash: string
-): Promise<boolean> {
+export async function verifyPassword(password: string, hash: string): Promise<boolean> {
   return bcrypt.compare(password, hash);
 }
 
 // =============================================
-// Typen (für bessere TypeScript-Unterstützung)
+// Typen
 // =============================================
 export interface UserRow {
   id: string;
@@ -158,10 +162,8 @@ export interface UserRow {
   password: string | null;
   stripeCustomerId: string | null;
   subscriptionStatus: string | null;
+  cancelAtPeriodEnd: number;
+  currentPeriodEnd: string | null;
 }
 
-
-// =============================================
-// Export der DB-Instanz (falls irgendwo direkt benötigt)
-// =============================================
 export default db;

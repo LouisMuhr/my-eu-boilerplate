@@ -1,24 +1,28 @@
 "use client";
 
-import { signIn } from "next-auth/react";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Chrome, Github,
+import { 
+  Github, 
+  Chrome, 
   ArrowLeft, 
-  Shield, 
+  UserPlus, 
   Mail, 
   Lock,
+  User,
   AlertCircle,
-  Loader2
+  Loader2,
+  CheckCircle2
 } from "lucide-react";
 
-export default function SignInPage() {
+export default function SignUpPage() {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-   const router = useRouter();
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,14 +30,22 @@ export default function SignInPage() {
     setError(null);
 
     try {
-      const res = await signIn("credentials", {
-        email,
-        password,
-        callbackUrl: "/dashboard",
-        redirect: true,
+      const res = await fetch("/api/register", {
+        method: "POST",
+        body: JSON.stringify({ name, email, password }),
+        headers: { "Content-Type": "application/json" },
       });
-    } catch (err) {
-      setError("Ein unerwarteter Fehler ist aufgetreten.");
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Registrierung fehlgeschlagen.");
+      }
+
+      // Erfolgreich -> Weiterleitung zum Login
+      router.push("/auth/signin?registered=true");
+    } catch (err: any) {
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -54,29 +66,23 @@ export default function SignInPage() {
         {/* Logo & Header */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-600 rounded-2xl shadow-lg shadow-blue-500/20 text-white mb-6">
-            <Shield className="w-7 h-7" />
+            <UserPlus className="w-7 h-7" />
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-2">
-            Willkommen zurück
+            Account erstellen
           </h1>
           <p className="text-gray-500 dark:text-gray-400">
-            Logge dich in dein EU-Boilerplate Konto ein.
+            Starte heute mit deinem rechtssicheren SaaS.
           </p>
         </div>
 
         {/* Social Logins */}
         <div className="grid grid-cols-2 gap-4 mb-8">
-          <button
-            onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
-            className="flex items-center justify-center gap-2 h-12 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all font-medium text-sm text-gray-700 dark:text-gray-300 shadow-sm"
-          >
+          <button className="flex items-center justify-center gap-2 h-12 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all font-medium text-sm text-gray-700 dark:text-gray-300 shadow-sm">
             <Chrome className="w-5 h-5 text-blue-500" />
             Google
           </button>
-          <button
-            onClick={() => signIn("github", { callbackUrl: "/dashboard" })}
-            className="flex items-center justify-center gap-2 h-12 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all font-medium text-sm text-gray-700 dark:text-gray-300 shadow-sm"
-          >
+          <button className="flex items-center justify-center gap-2 h-12 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all font-medium text-sm text-gray-700 dark:text-gray-300 shadow-sm">
             <Github className="w-5 h-5" />
             GitHub
           </button>
@@ -89,7 +95,7 @@ export default function SignInPage() {
           </div>
           <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-white dark:bg-gray-950 px-4 text-gray-500 font-medium">
-              Oder mit E-Mail fortfahren
+              Oder klassisch registrieren
             </span>
           </div>
         </div>
@@ -103,7 +109,26 @@ export default function SignInPage() {
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">
+              Vollständiger Name
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <User className="h-5 w-5 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Max Mustermann"
+                className="block w-full h-12 pl-11 pr-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all dark:text-white placeholder:text-gray-400"
+              />
+            </div>
+          </div>
+
           <div className="space-y-2">
             <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">
               E-Mail Adresse
@@ -124,17 +149,9 @@ export default function SignInPage() {
           </div>
 
           <div className="space-y-2">
-            <div className="flex justify-between items-center ml-1">
-              <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                Passwort
-              </label>
-              <Link 
-                href="/auth/forgot-password" 
-                className="text-xs font-medium text-blue-600 hover:underline"
-              >
-                Vergessen?
-              </Link>
-            </div>
+            <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">
+              Passwort
+            </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                 <Lock className="h-5 w-5 text-gray-400" />
@@ -144,10 +161,18 @@ export default function SignInPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder="Mind. 8 Zeichen"
                 className="block w-full h-12 pl-11 pr-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all dark:text-white placeholder:text-gray-400"
               />
             </div>
+          </div>
+
+          <div className="pt-2">
+            <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed text-center px-4">
+              Mit der Registrierung akzeptierst du unsere{" "}
+              <Link href="/legal/privacy" className="text-blue-600 hover:underline">Datenschutzerklärung</Link> und die{" "}
+              <Link href="/legal/imprint" className="text-blue-600 hover:underline">AGB</Link>.
+            </p>
           </div>
 
           <button
@@ -158,25 +183,28 @@ export default function SignInPage() {
             {loading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
-              "Anmelden"
+              "Account erstellen"
             )}
           </button>
         </form>
 
         <p className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
-          Noch keinen Account?{" "}
+          Bereits ein Konto?{" "}
           <Link 
-            href="/auth/signup" 
+            href="/auth/signin" 
             className="font-bold text-blue-600 hover:underline"
           >
-            Kostenlos registrieren
+            Jetzt einloggen
           </Link>
         </p>
 
         {/* Compliance Note */}
-        <p className="mt-12 text-center text-[10px] text-gray-400 dark:text-gray-600 uppercase tracking-widest font-medium">
-          Sicherer Login via NextAuth v5 & AES-256 Verschlüsselung
-        </p>
+        <div className="mt-12 flex items-center justify-center gap-2 opacity-40">
+           <CheckCircle2 className="w-3 h-3" />
+           <p className="text-[10px] uppercase tracking-widest font-medium">
+             DSGVO-Konforme Datenspeicherung
+           </p>
+        </div>
       </div>
     </main>
   );

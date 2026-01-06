@@ -1,37 +1,115 @@
+// Datei: src/components/DashboardActions.tsx
+
 "use client";
 
 import { useState } from "react";
+import { 
+  Download, 
+  Trash2, 
+  CreditCard, 
+  ShieldCheck, 
+  Loader2, 
+  CheckCircle2,
+  Zap,
+  ExternalLink,
+  ShieldAlert,
+  User,
+  Save,
+  ArrowRight,
+  CalendarX
+} from "lucide-react";
+
+interface DashboardActionsProps {
+  userId: string;
+  userName: string;
+  userEmail: string;
+  subscriptionStatus: string;
+  cancelAtPeriodEnd: boolean;
+  currentPeriodEnd: string | null;
+  hasStripeCustomer: boolean;
+}
 
 export default function DashboardActions({
   userId,
+  userName,
+  userEmail,
   subscriptionStatus,
-}: {
-  userId: string;
-  subscriptionStatus: string;
-}) {
-  const [loadingOneTime, setLoadingOneTime] = useState(false);
-  const [loadingSubscription, setLoadingSubscription] = useState(false);
+  cancelAtPeriodEnd,
+  currentPeriodEnd,
+  hasStripeCustomer
+}: DashboardActionsProps) {
+  const [loadingPortal, setLoadingPortal] = useState(false);
+  const [loadingCheckout, setLoadingCheckout] = useState(false);
+  const [loadingUpdate, setLoadingUpdate] = useState(false);
   const [loadingExport, setLoadingExport] = useState(false);
   const [loadingDelete, setLoadingDelete] = useState(false);
+  const [name, setName] = useState(userName);
 
-  const handleOneTime = async () => {
-    setLoadingOneTime(true);
+  // --- STRIPE PORTAL (ABO VERWALTEN) ---
+  const handleOpenPortal = async () => {
+    setLoadingPortal(true);
+    try {
+      const res = await fetch("/api/create-portal-link", { method: "POST" });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error(data.error || "Portal konnte nicht geladen werden.");
+      }
+    } catch (err: any) {
+      console.error("Portal Fehler:", err.message);
+      alert(err.message);
+    } finally {
+      setLoadingPortal(false);
+    }
+  };
+
+  // --- STRIPE CHECKOUT (UPGRADE) ---
+  const handleCheckout = async () => {
+    setLoadingCheckout(true);
     try {
       const res = await fetch("/api/create-checkout", {
         method: "POST",
-        body: JSON.stringify({
-          priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ONE_TIME,
+        body: JSON.stringify({ 
+          priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_SUBSCRIPTION 
         }),
         headers: { "Content-Type": "application/json" },
       });
-      const { url } = await res.json();
-      if (url) window.location.href = url;
-    } catch (err) {
-      console.error("One-Time Fehler:", err);
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error(data.error || "Checkout fehlgeschlagen.");
+      }
+    } catch (err: any) {
+      console.error("Checkout Fehler:", err.message);
+      alert(err.message);
+    } finally {
+      setLoadingCheckout(false);
     }
-    setLoadingOneTime(false);
   };
 
+  // --- PROFIL UPDATE ---
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoadingUpdate(true);
+    try {
+      const res = await fetch("/api/user/update", {
+        method: "POST",
+        body: JSON.stringify({ name }),
+        headers: { "Content-Type": "application/json" },
+      });
+      if (!res.ok) throw new Error("Update fehlgeschlagen.");
+      // In einer echten App würden wir hier die Seite neu laden oder den State global updaten
+      alert("Profil erfolgreich aktualisiert!");
+    } catch (err: any) {
+      alert(err.message);
+    } finally {
+      setLoadingUpdate(false);
+    }
+  };
+
+  // --- DSGVO EXPORT ---
   const handleExport = async () => {
     setLoadingExport(true);
     try {
@@ -41,99 +119,160 @@ export default function DashboardActions({
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = `meine-daten-${userId}.json`;
+        a.download = `user-data-${userId}.json`;
         a.click();
-        window.URL.revokeObjectURL(url);
       }
-    } catch (err) {
-      console.error("Export Fehler:", err);
+    } finally {
+      setLoadingExport(false);
     }
-    setLoadingExport(false);
   };
-
-  const handleDelete = async () => {
-    if (!confirm("Bist du sicher? Account wird unwiderruflich gelöscht!"))
-      return;
-
-    setLoadingDelete(true);
-    try {
-      const res = await fetch("/api/delete-account", { method: "POST" });
-      if (res.ok) {
-        window.location.href = "/auth/signin";
-      }
-    } catch (err) {
-      console.error("Delete Fehler:", err);
-    }
-    setLoadingDelete(false);
-  };
-
-  const handleSubscription = async () => {
-    setLoadingSubscription(true);
-    try {
-      const res = await fetch("/api/create-checkout", {
-        method: "POST",
-        body: JSON.stringify({
-          priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_SUBSCRIPTION,
-        }),
-        headers: { "Content-Type": "application/json" },
-      });
-      const { url } = await res.json();
-      if (url) window.location.href = url;
-    } catch (err) {
-      console.error("Subscription Fehler:", err);
-    }
-    setLoadingSubscription(false);
-  };
-
+  console.log("currentPeriodEnd:", currentPeriodEnd);
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 space-y-4">
-      <h2 className="text-xl font-semibold mb-4">Premium werden</h2>
-      <p className="mb-4">
-        Aktueller Status:{" "}
-        <strong>
-          {/* Hier kommt subscriptionStatus rein – siehe unten */}
-        </strong>
-      </p>
-
-      <div className="grid md:grid-cols-2 gap-4">
-        <button
-          onClick={handleOneTime}
-          disabled={loadingOneTime}
-          className="py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition"
-        >
-          {loadingOneTime ? "Lädt..." : "Einmalzahlung (99 €)"}
-        </button>
-
-        <button
-          onClick={handleSubscription}
-          disabled={loadingSubscription}
-          className="py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 transition"
-        >
-          {loadingSubscription ? "Lädt..." : "Abo (9.99 €/Monat)"}
-        </button>
-      </div>
-      {/* DSGVO-Bereich – jetzt wieder vollständig drin */}
-      <div className="border-t border-gray-200 dark:border-gray-700 pt-6">
-        <h2 className="text-xl font-semibold mb-4">DSGVO-Rechte</h2>
-
-        <div className="space-y-4">
-          <button
-            onClick={handleExport}
-            disabled={loadingExport}
-            className="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition"
-          >
-            {loadingExport ? "Lädt..." : "Meine Daten exportieren (JSON)"}
-          </button>
-
-          <button
-            onClick={handleDelete}
-            disabled={loadingDelete}
-            className="w-full py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition"
-          >
-            {loadingDelete ? "Lädt..." : "Account löschen"}
-          </button>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      
+      {/* --- ABRECHNUNG & STATUS --- */}
+      <div className="bg-white dark:bg-gray-900 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden flex flex-col hover:shadow-xl transition-all duration-500">
+        <div className="p-8 border-b border-gray-50 dark:border-gray-800 bg-gradient-to-br from-blue-50/30 to-transparent flex items-center justify-between">
+          <div className="space-y-1">
+            <h3 className="font-black uppercase tracking-tighter">Abrechnung</h3>
+            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Plan & Status</p>
+          </div>
+          <CreditCard className="w-6 h-6 text-blue-600" />
+        </div>
+        
+        <div className="p-8 space-y-6 flex-1 flex flex-col justify-center">
+          {subscriptionStatus === 'free' ? (
+            <button
+              onClick={handleCheckout}
+              disabled={loadingCheckout}
+              className="w-full flex items-center justify-between p-6 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-[2.5rem] text-white shadow-xl shadow-blue-500/20 hover:scale-[1.02] transition-all disabled:opacity-50 group"
+            >
+              <div className="text-left font-bold">
+                <p className="text-lg">Upgrade auf Pro</p>
+                <p className="text-xs opacity-70">Schalte alle Features frei</p>
+              </div>
+              <div className="h-12 w-12 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                {loadingCheckout ? <Loader2 className="w-6 h-6 animate-spin" /> : <Zap className="w-6 h-6 fill-white" />}
+              </div>
+            </button>
+          ) : (
+            <div className="space-y-4">
+               {/* DIESER BLOCK ZEIGT DEN KÜNDIGUNGS-STATUS */}
+               {cancelAtPeriodEnd ? (
+                  <div className="p-6 bg-amber-50 dark:bg-amber-900/10 rounded-[2rem] border border-amber-200 dark:border-amber-800/30 flex items-center gap-4 animate-in fade-in duration-700">
+                    <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/40 rounded-2xl flex items-center justify-center text-amber-600">
+                      <CalendarX className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <p className="text-base font-black text-amber-800 dark:text-amber-400">Abo gekündigt</p>
+                      <p className="text-[10px] text-amber-700/60 font-bold uppercase tracking-tight">Zugriff endet am {currentPeriodEnd}</p>
+                    </div>
+                  </div>
+               ) : (
+                  <div className="p-6 bg-green-50/50 dark:bg-green-900/10 rounded-[2rem] border border-green-100 dark:border-green-800/30 flex items-center gap-4">
+                    <div className="w-12 h-12 bg-green-100 dark:bg-green-900/40 rounded-2xl flex items-center justify-center text-green-600">
+                      <CheckCircle2 className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <p className="text-base font-black text-green-800 dark:text-green-400">Abo ist aktiv</p>
+                      <p className="text-[10px] text-green-700/60 font-bold uppercase tracking-tight">Verlängerung am {currentPeriodEnd}</p>
+                    </div>
+                  </div>
+               )}
+               
+               {hasStripeCustomer && (
+                 <button
+                   onClick={handleOpenPortal}
+                   disabled={loadingPortal}
+                   className="w-full flex items-center justify-between p-5 bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 hover:border-blue-500 hover:bg-blue-50/30 transition-all group"
+                 >
+                   <div className="text-left font-bold">
+                     <p className="text-sm group-hover:text-blue-600 transition-colors">Stripe Portal</p>
+                     <p className="text-[10px] text-gray-400 uppercase tracking-widest">Kündigen & Rechnungen</p>
+                   </div>
+                   <div className="h-10 w-10 rounded-xl bg-gray-50 dark:bg-gray-900 flex items-center justify-center text-gray-400 group-hover:text-blue-600">
+                     {loadingPortal ? <Loader2 className="w-5 h-5 animate-spin" /> : <ExternalLink className="w-5 h-5" />}
+                   </div>
+                 </button>
+               )}
+            </div>
+          )}
         </div>
       </div>
+
+      {/* --- PROFIL EINSTELLUNGEN --- */}
+      <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden flex flex-col">
+        <div className="p-8 border-b border-gray-50 dark:border-gray-800 flex items-center justify-between">
+          <div className="space-y-1">
+            <h3 className="font-black flex items-center gap-2 uppercase tracking-tighter">Profil</h3>
+            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Persönliche Identität</p>
+          </div>
+          <div className="h-10 w-10 rounded-xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400">
+            <User className="w-5 h-5" />
+          </div>
+        </div>
+        
+        <form onSubmit={handleUpdateProfile} className="p-8 space-y-6 flex-1 flex flex-col justify-center">
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-1">Anzeigename</label>
+            <div className="relative">
+              <input 
+                type="text" 
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full h-14 px-5 rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-bold text-sm dark:text-white"
+                placeholder="Dein Name"
+              />
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-1">E-Mail (Nur Lesezugriff)</label>
+            <input 
+              type="email" 
+              value={userEmail}
+              disabled
+              className="w-full h-14 px-5 rounded-2xl border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-950/50 text-gray-400 font-medium text-sm cursor-not-allowed opacity-60"
+            />
+          </div>
+
+          <button 
+            type="submit"
+            disabled={loadingUpdate}
+            className="w-full h-14 bg-gray-900 dark:bg-white dark:text-gray-900 text-white rounded-2xl font-black text-sm flex items-center justify-center gap-2 hover:bg-black dark:hover:bg-gray-100 transition-all shadow-lg active:scale-95 disabled:opacity-50"
+          >
+            {loadingUpdate ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save className="w-5 h-5" /> Änderungen speichern</>}
+          </button>
+        </form>
+      </div>
+
+      {/* --- SICHERHEIT & DSGVO --- */}
+      <div className="lg:col-span-2 bg-white dark:bg-gray-900 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden p-8 flex flex-col md:flex-row items-center justify-between gap-8 hover:shadow-xl hover:shadow-green-500/5 transition-all duration-500">
+        <div className="flex items-center gap-6">
+           <div className="w-16 h-16 bg-green-50 dark:bg-green-900/20 rounded-[1.5rem] flex items-center justify-center text-green-600 border border-green-100 dark:border-green-800/30">
+              <ShieldCheck className="w-8 h-8" />
+           </div>
+           <div className="space-y-1">
+              <p className="font-black text-xl tracking-tighter dark:text-white">Transparenz & Sicherheit</p>
+              <p className="text-sm text-gray-400 font-medium leading-relaxed max-w-sm">Deine Daten werden nach höchsten EU-Standards verschlüsselt und DSGVO-konform verarbeitet.</p>
+           </div>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+           <button 
+            onClick={handleExport}
+            disabled={loadingExport}
+            className="h-14 px-8 bg-gray-50 dark:bg-gray-800 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-100 dark:hover:bg-gray-700 transition-all flex items-center justify-center gap-3 border border-gray-100 dark:border-gray-700"
+           >
+              {loadingExport ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Download className="w-4 h-4" /> Datenexport</>}
+           </button>
+           <button 
+            className="h-14 px-8 border-2 border-red-50 dark:border-red-900/20 text-red-600 dark:text-red-400 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-red-50 dark:hover:bg-red-900/20 transition-all flex items-center justify-center gap-3"
+           >
+              <ShieldAlert className="w-4 h-4" /> Account löschen
+           </button>
+        </div>
+      </div>
+
     </div>
   );
 }

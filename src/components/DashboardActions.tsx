@@ -1,22 +1,18 @@
-// Datei: src/components/DashboardActions.tsx
-
 "use client";
 
 import { useState } from "react";
 import { 
-  Download, 
-  Trash2, 
   CreditCard, 
-  ShieldCheck, 
   Loader2, 
   CheckCircle2,
   Zap,
   ExternalLink,
-  ShieldAlert,
+  CalendarX,
   User,
   Save,
-  ArrowRight,
-  CalendarX
+  Download,
+  ShieldAlert,
+  Star
 } from "lucide-react";
 
 interface DashboardActionsProps {
@@ -30,103 +26,52 @@ interface DashboardActionsProps {
 }
 
 export default function DashboardActions({
-  userId,
   userName,
-  userEmail,
   subscriptionStatus,
   cancelAtPeriodEnd,
   currentPeriodEnd,
   hasStripeCustomer
 }: DashboardActionsProps) {
   const [loadingPortal, setLoadingPortal] = useState(false);
-  const [loadingCheckout, setLoadingCheckout] = useState(false);
-  const [loadingUpdate, setLoadingUpdate] = useState(false);
-  const [loadingExport, setLoadingExport] = useState(false);
-  const [loadingDelete, setLoadingDelete] = useState(false);
+  const [loadingType, setLoadingType] = useState<"monthly" | "annual" | null>(null);
   const [name, setName] = useState(userName);
 
-  // --- STRIPE PORTAL (ABO VERWALTEN) ---
   const handleOpenPortal = async () => {
     setLoadingPortal(true);
     try {
       const res = await fetch("/api/create-portal-link", { method: "POST" });
       const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error(data.error || "Portal konnte nicht geladen werden.");
-      }
+      if (data.url) window.location.href = data.url;
+      else throw new Error(data.error);
     } catch (err: any) {
-      console.error("Portal Fehler:", err.message);
-      alert(err.message);
+      console.error("Portal Error:", err);
     } finally {
       setLoadingPortal(false);
     }
   };
 
-  // --- STRIPE CHECKOUT (UPGRADE) ---
-  const handleCheckout = async () => {
-    setLoadingCheckout(true);
+  const handleCheckout = async (type: "monthly" | "annual") => {
+    setLoadingType(type);
+    const priceId = type === "monthly" 
+      ? process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY 
+      : process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY;
+
     try {
       const res = await fetch("/api/create-checkout", {
         method: "POST",
-        body: JSON.stringify({ 
-          priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_SUBSCRIPTION 
-        }),
+        body: JSON.stringify({ priceId }),
         headers: { "Content-Type": "application/json" },
       });
       const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        throw new Error(data.error || "Checkout fehlgeschlagen.");
-      }
+      if (data.url) window.location.href = data.url;
+      else throw new Error(data.error);
     } catch (err: any) {
-      console.error("Checkout Fehler:", err.message);
-      alert(err.message);
+      console.error("Checkout Error:", err);
     } finally {
-      setLoadingCheckout(false);
+      setLoadingType(null);
     }
   };
 
-  // --- PROFIL UPDATE ---
-  const handleUpdateProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoadingUpdate(true);
-    try {
-      const res = await fetch("/api/user/update", {
-        method: "POST",
-        body: JSON.stringify({ name }),
-        headers: { "Content-Type": "application/json" },
-      });
-      if (!res.ok) throw new Error("Update fehlgeschlagen.");
-      // In einer echten App würden wir hier die Seite neu laden oder den State global updaten
-      alert("Profil erfolgreich aktualisiert!");
-    } catch (err: any) {
-      alert(err.message);
-    } finally {
-      setLoadingUpdate(false);
-    }
-  };
-
-  // --- DSGVO EXPORT ---
-  const handleExport = async () => {
-    setLoadingExport(true);
-    try {
-      const res = await fetch("/api/export-data");
-      if (res.ok) {
-        const blob = await res.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `user-data-${userId}.json`;
-        a.click();
-      }
-    } finally {
-      setLoadingExport(false);
-    }
-  };
-  console.log("currentPeriodEnd:", currentPeriodEnd);
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       
@@ -134,47 +79,68 @@ export default function DashboardActions({
       <div className="bg-white dark:bg-gray-900 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden flex flex-col hover:shadow-xl transition-all duration-500">
         <div className="p-8 border-b border-gray-50 dark:border-gray-800 bg-gradient-to-br from-blue-50/30 to-transparent flex items-center justify-between">
           <div className="space-y-1">
-            <h3 className="font-black uppercase tracking-tighter">Abrechnung</h3>
-            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Plan & Status</p>
+            <h3 className="font-black uppercase tracking-tighter text-sm">Abrechnung</h3>
+            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Plan & Abo-Status</p>
           </div>
-          <CreditCard className="w-6 h-6 text-blue-600" />
+          <CreditCard className="w-5 h-5 text-blue-600" />
         </div>
         
-        <div className="p-8 space-y-6 flex-1 flex flex-col justify-center">
+        <div className="p-8 space-y-4 flex-1 flex flex-col justify-center">
           {subscriptionStatus === 'free' ? (
-            <button
-              onClick={handleCheckout}
-              disabled={loadingCheckout}
-              className="w-full flex items-center justify-between p-6 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-[2.5rem] text-white shadow-xl shadow-blue-500/20 hover:scale-[1.02] transition-all disabled:opacity-50 group"
-            >
-              <div className="text-left font-bold">
-                <p className="text-lg">Upgrade auf Pro</p>
-                <p className="text-xs opacity-70">Schalte alle Features frei</p>
-              </div>
-              <div className="h-12 w-12 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                {loadingCheckout ? <Loader2 className="w-6 h-6 animate-spin" /> : <Zap className="w-6 h-6 fill-white" />}
-              </div>
-            </button>
+            <div className="grid grid-cols-1 gap-4">
+              {/* Monatliches Abo */}
+              <button
+                onClick={() => handleCheckout("monthly")}
+                disabled={!!loadingType}
+                className="w-full flex items-center justify-between p-5 bg-white dark:bg-gray-800 border-2 border-gray-100 dark:border-gray-800 rounded-[2rem] hover:border-blue-500 transition-all disabled:opacity-50 group cursor-pointer"
+              >
+                <div className="text-left font-bold">
+                  <p className="text-sm text-gray-900 dark:text-white">Monatliches Abo</p>
+                  <p className="text-[10px] text-gray-400 uppercase tracking-tight">Maximale Flexibilität</p>
+                </div>
+                <div className="h-10 w-10 bg-gray-50 dark:bg-gray-900 rounded-xl flex items-center justify-center group-hover:bg-blue-50 dark:group-hover:bg-blue-900/20 group-hover:text-blue-600 transition-colors">
+                  {loadingType === "monthly" ? <Loader2 className="w-5 h-5 animate-spin" /> : <Zap className="w-5 h-5" />}
+                </div>
+              </button>
+
+              {/* Jährliches Abo (Highlight) */}
+              <button
+                onClick={() => handleCheckout("annual")}
+                disabled={!!loadingType}
+                className="w-full flex items-center justify-between p-6 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-[2rem] text-white shadow-xl shadow-blue-500/20 hover:scale-[1.02] transition-all disabled:opacity-50 group cursor-pointer relative overflow-hidden"
+              >
+                <div className="absolute top-0 right-0 p-2 bg-white/10 text-[8px] font-black uppercase tracking-widest">
+                  -20% Ersparnis
+                </div>
+                <div className="text-left font-bold">
+                  <p className="text-lg">Jährliches Abo</p>
+                  <p className="text-xs opacity-70">Bester Wert für Profis</p>
+                </div>
+                <div className="h-12 w-12 bg-white/20 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                  {loadingType === "annual" ? <Loader2 className="w-6 h-6 animate-spin" /> : <Star className="w-6 h-6 fill-white" />}
+                </div>
+              </button>
+            </div>
           ) : (
             <div className="space-y-4">
-               {/* DIESER BLOCK ZEIGT DEN KÜNDIGUNGS-STATUS */}
+               {/* Abo-Logik: Gekündigt vs Aktiv */}
                {cancelAtPeriodEnd ? (
-                  <div className="p-6 bg-amber-50 dark:bg-amber-900/10 rounded-[2rem] border border-amber-200 dark:border-amber-800/30 flex items-center gap-4 animate-in fade-in duration-700">
-                    <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/40 rounded-2xl flex items-center justify-center text-amber-600">
-                      <CalendarX className="w-6 h-6" />
+                  <div className="p-5 bg-amber-50 dark:bg-amber-900/10 rounded-[2rem] border border-amber-100 dark:border-amber-800/30 flex items-center gap-4">
+                    <div className="w-10 h-10 bg-amber-100 dark:bg-amber-900/40 rounded-2xl flex items-center justify-center text-amber-600">
+                      <CalendarX className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="text-base font-black text-amber-800 dark:text-amber-400">Abo gekündigt</p>
-                      <p className="text-[10px] text-amber-700/60 font-bold uppercase tracking-tight">Zugriff endet am {currentPeriodEnd}</p>
+                      <p className="text-sm font-black text-amber-800 dark:text-amber-400">Abo gekündigt</p>
+                      <p className="text-[10px] text-amber-700/60 font-bold uppercase tracking-tight">Erlischt am {currentPeriodEnd}</p>
                     </div>
                   </div>
                ) : (
-                  <div className="p-6 bg-green-50/50 dark:bg-green-900/10 rounded-[2rem] border border-green-100 dark:border-green-800/30 flex items-center gap-4">
-                    <div className="w-12 h-12 bg-green-100 dark:bg-green-900/40 rounded-2xl flex items-center justify-center text-green-600">
-                      <CheckCircle2 className="w-6 h-6" />
+                  <div className="p-5 bg-green-50/50 dark:bg-green-900/10 rounded-[2rem] border border-green-100 dark:border-green-800/30 flex items-center gap-4">
+                    <div className="w-10 h-10 bg-green-100 dark:bg-green-900/40 rounded-2xl flex items-center justify-center text-green-600">
+                      <CheckCircle2 className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="text-base font-black text-green-800 dark:text-green-400">Abo ist aktiv</p>
+                      <p className="text-sm font-black text-green-800 dark:text-green-400">Abo ist aktiv</p>
                       <p className="text-[10px] text-green-700/60 font-bold uppercase tracking-tight">Verlängerung am {currentPeriodEnd}</p>
                     </div>
                   </div>
@@ -184,11 +150,11 @@ export default function DashboardActions({
                  <button
                    onClick={handleOpenPortal}
                    disabled={loadingPortal}
-                   className="w-full flex items-center justify-between p-5 bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 hover:border-blue-500 hover:bg-blue-50/30 transition-all group"
+                   className="w-full flex items-center justify-between p-5 bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-700 hover:border-blue-500 hover:bg-blue-50/30 transition-all group cursor-pointer"
                  >
                    <div className="text-left font-bold">
-                     <p className="text-sm group-hover:text-blue-600 transition-colors">Stripe Portal</p>
-                     <p className="text-[10px] text-gray-400 uppercase tracking-widest">Kündigen & Rechnungen</p>
+                     <p className="text-sm group-hover:text-blue-600 transition-colors">Stripe Portal öffnen</p>
+                     <p className="text-[10px] text-gray-400 uppercase tracking-widest">Abo verwalten & Kündigen</p>
                    </div>
                    <div className="h-10 w-10 rounded-xl bg-gray-50 dark:bg-gray-900 flex items-center justify-center text-gray-400 group-hover:text-blue-600">
                      {loadingPortal ? <Loader2 className="w-5 h-5 animate-spin" /> : <ExternalLink className="w-5 h-5" />}
@@ -200,77 +166,46 @@ export default function DashboardActions({
         </div>
       </div>
 
-      {/* --- PROFIL EINSTELLUNGEN --- */}
-      <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden flex flex-col">
-        <div className="p-8 border-b border-gray-50 dark:border-gray-800 flex items-center justify-between">
+      {/* --- PROFIL UPDATE --- */}
+      <div className="bg-white dark:bg-gray-900 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm p-8 flex flex-col space-y-6">
+        <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <h3 className="font-black flex items-center gap-2 uppercase tracking-tighter">Profil</h3>
-            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Persönliche Identität</p>
+            <h3 className="font-black uppercase tracking-tighter text-sm">Profil</h3>
+            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Persönliche Informationen</p>
           </div>
-          <div className="h-10 w-10 rounded-xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400">
-            <User className="w-5 h-5" />
-          </div>
+          <User className="w-5 h-5 text-gray-400" />
         </div>
         
-        <form onSubmit={handleUpdateProfile} className="p-8 space-y-6 flex-1 flex flex-col justify-center">
+        <div className="space-y-4">
           <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-1">Anzeigename</label>
-            <div className="relative">
-              <input 
-                type="text" 
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full h-14 px-5 rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-bold text-sm dark:text-white"
-                placeholder="Dein Name"
-              />
-            </div>
-          </div>
-          
-          <div className="space-y-2">
-            <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-1">E-Mail (Nur Lesezugriff)</label>
+            <label className="text-[10px] font-black uppercase text-gray-400 tracking-widest ml-1">Vollständiger Name</label>
             <input 
-              type="email" 
-              value={userEmail}
-              disabled
-              className="w-full h-14 px-5 rounded-2xl border border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-950/50 text-gray-400 font-medium text-sm cursor-not-allowed opacity-60"
+              type="text" 
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="w-full h-12 px-5 rounded-2xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 font-bold text-sm focus:ring-2 focus:ring-blue-500 outline-none transition-all"
             />
           </div>
-
-          <button 
-            type="submit"
-            disabled={loadingUpdate}
-            className="w-full h-14 bg-gray-900 dark:bg-white dark:text-gray-900 text-white rounded-2xl font-black text-sm flex items-center justify-center gap-2 hover:bg-black dark:hover:bg-gray-100 transition-all shadow-lg active:scale-95 disabled:opacity-50"
-          >
-            {loadingUpdate ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Save className="w-5 h-5" /> Änderungen speichern</>}
+          <button className="w-full h-12 bg-gray-900 dark:bg-white dark:text-gray-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-black transition-all shadow-lg cursor-pointer">
+             <Save className="w-4 h-4" /> Speichern
           </button>
-        </form>
+        </div>
       </div>
 
-      {/* --- SICHERHEIT & DSGVO --- */}
-      <div className="lg:col-span-2 bg-white dark:bg-gray-900 rounded-[3rem] border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden p-8 flex flex-col md:flex-row items-center justify-between gap-8 hover:shadow-xl hover:shadow-green-500/5 transition-all duration-500">
-        <div className="flex items-center gap-6">
-           <div className="w-16 h-16 bg-green-50 dark:bg-green-900/20 rounded-[1.5rem] flex items-center justify-center text-green-600 border border-green-100 dark:border-green-800/30">
-              <ShieldCheck className="w-8 h-8" />
-           </div>
-           <div className="space-y-1">
-              <p className="font-black text-xl tracking-tighter dark:text-white">Transparenz & Sicherheit</p>
-              <p className="text-sm text-gray-400 font-medium leading-relaxed max-w-sm">Deine Daten werden nach höchsten EU-Standards verschlüsselt und DSGVO-konform verarbeitet.</p>
-           </div>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-           <button 
-            onClick={handleExport}
-            disabled={loadingExport}
-            className="h-14 px-8 bg-gray-50 dark:bg-gray-800 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-100 dark:hover:bg-gray-700 transition-all flex items-center justify-center gap-3 border border-gray-100 dark:border-gray-700"
-           >
-              {loadingExport ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Download className="w-4 h-4" /> Datenexport</>}
-           </button>
-           <button 
-            className="h-14 px-8 border-2 border-red-50 dark:border-red-900/20 text-red-600 dark:text-red-400 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-red-50 dark:hover:bg-red-900/20 transition-all flex items-center justify-center gap-3"
-           >
-              <ShieldAlert className="w-4 h-4" /> Account löschen
-           </button>
-        </div>
+      {/* --- DATEN & DSGVO --- */}
+      <div className="lg:col-span-2 bg-white dark:bg-gray-900 rounded-[3rem] border border-gray-100 dark:border-gray-800 p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+         <div className="flex items-center gap-6">
+            <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/20 rounded-3xl flex items-center justify-center text-blue-600 border border-blue-100 dark:border-blue-800">
+               <Download className="w-8 h-8" />
+            </div>
+            <div>
+               <p className="font-black text-xl tracking-tighter">Daten-Export</p>
+               <p className="text-sm text-gray-400 max-w-sm">Lade alle deine gespeicherten Informationen als JSON-Datei herunter (DSGVO Art. 20).</p>
+            </div>
+         </div>
+         <button className="h-14 px-8 bg-gray-100 dark:bg-gray-800 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-gray-200 transition-colors cursor-pointer">
+            Export starten
+         </button>
       </div>
 
     </div>

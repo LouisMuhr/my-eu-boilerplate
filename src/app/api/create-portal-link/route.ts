@@ -1,19 +1,12 @@
-// Datei: src/app/api/create-portal-link/route.ts
-
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { dbHelpers, UserRow } from "@/lib/db";
 import Stripe from "stripe";
-import { dbHelpers } from "@/lib/db";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-12-15.clover",
+  apiVersion: "2024-09-30.acacia", // Bleib bei der stabilen Version!
 });
 
-/**
- * Erstellt einen Link zum Stripe Customer Portal.
- * Hier können Nutzer Abos kündigen, Rechnungen laden und Karten ändern.
- * UNVERZICHTBAR für EU-Compliance.
- */
 export async function POST() {
   try {
     const session = await auth();
@@ -21,20 +14,34 @@ export async function POST() {
       return NextResponse.json({ error: "Nicht autorisiert" }, { status: 401 });
     }
 
-    const user = dbHelpers.getUserById.get(session.user.id) as any;
+    // User aus der DB holen
+    const user = dbHelpers.getUserById.get(session.user.id) as UserRow | undefined;
 
-    if (!user?.stripeCustomerId) {
-      return NextResponse.json({ error: "Kein Stripe-Kunde gefunden." }, { status: 400 });
+    if (!user || !user.stripeCustomerId) {
+      console.error("❌ Portal-Fehler: User hat keine stripeCustomerId in der DB.");
+      return NextResponse.json({ 
+        error: "Kunden-ID fehlt. Bitte kauf erst ein Abo oder lade die Seite neu." 
+      }, { status: 400 });
     }
 
+    // Portal Session erstellen
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: user.stripeCustomerId,
       return_url: `${process.env.NEXT_PUBLIC_URL}/dashboard`,
     });
 
+    if (!portalSession.url) {
+      throw new Error("Stripe hat keine Portal-URL generiert.");
+    }
+
     return NextResponse.json({ url: portalSession.url });
+
   } catch (error: any) {
-    console.error("Portal Fehler:", error);
-    return NextResponse.json({ error: "Portal konnte nicht geladen werden." }, { status: 500 });
+    console.error("🔥 STRIPE PORTAL ERROR:", error.message);
+    
+    // WICHTIG: Sende IMMER JSON zurück, damit das Frontend nicht abstürzt
+    return NextResponse.json({ 
+      error: "Stripe-Konfigurationsfehler: Hast du das Kundenportal im Stripe-Dashboard aktiviert?" 
+    }, { status: 500 });
   }
 }

@@ -54,8 +54,8 @@ export default function DashboardActions({
   const handleCheckout = async (type: "monthly" | "annual") => {
     setLoadingType(type);
     const priceId = type === "monthly" 
-      ? process.env.NEXT_PUBLIC_STRIPE_PRICE_SUBSCRIPTION 
-      : process.env.NEXT_PUBLIC_STRIPE_PRICE_ANNUAL;
+      ? process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY 
+      : process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY;
 
     try {
       const res = await fetch("/api/create-checkout", {

@@ -1,25 +1,36 @@
+// Datei: src/app/api/export-data/route.ts
+
+import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { dbHelpers } from "@/lib/db";
-import { NextResponse } from "next/server";
 
 export async function GET() {
-  const session = await auth();
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Nicht autorisiert" }, { status: 401 });
+    }
 
-  const user = dbHelpers.getUserById.get(session.user.id);
+    // Alle Daten des Nutzers aus der DB holen
+    const user = dbHelpers.getUserById.get(session.user.id) as any;
 
-  if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+    if (!user) {
+      return NextResponse.json({ error: "Nutzer nicht gefunden" }, { status: 404 });
+    }
 
-  // Passwort entfernen
-  // @ts-ignore
-  delete user.password;
+    // Sensible Daten wie das Passwort-Hash entfernen
+    const { password, ...safeData } = user;
 
-  const json = JSON.stringify(user, null, 2);
-
-  return new NextResponse(json, {
-    headers: {
-      "Content-Type": "application/json",
-      "Content-Disposition": `attachment; filename="meine-daten-${session.user.id}.json"`,
-    },
-  });
+    // Das JSON als Datei-Download bereitstellen
+    return new NextResponse(JSON.stringify(safeData, null, 2), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+        "Content-Disposition": `attachment; filename="dsgvo-daten-export-${session.user.id}.json"`,
+      },
+    });
+  } catch (error) {
+    console.error("Export Fehler:", error);
+    return NextResponse.json({ error: "Export fehlgeschlagen" }, { status: 500 });
+  }
 }

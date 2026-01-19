@@ -13,6 +13,8 @@ import { Chrome, Github,
   Loader2
 } from "lucide-react";
 
+
+
 export default function SignInPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,14 +28,21 @@ export default function SignInPage() {
     setError(null);
 
     try {
-      const res = await signIn("credentials", {
+      // In NextAuth v5 sorgt redirect: false dafür, dass wir den Error hier abfangen können
+      const result = await signIn("credentials", {
         email,
         password,
-        callbackUrl: "/dashboard",
-        redirect: true,
+        redirect: false,
       });
+
+      if (result?.error) {
+        setError("Die Anmeldedaten sind nicht korrekt. Bitte versuche es erneut.");
+      } else {
+        router.push("/dashboard");
+        router.refresh();
+      }
     } catch (err) {
-      setError("Ein unerwarteter Fehler ist aufgetreten.");
+      setError("Verbindung zum Server fehlgeschlagen.");
     } finally {
       setLoading(false);
     }

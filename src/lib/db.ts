@@ -1,5 +1,3 @@
-// Datei: src/lib/db.ts
-
 import Database from "better-sqlite3";
 import bcrypt from "bcryptjs";
 import { randomUUID } from "crypto";
@@ -7,16 +5,31 @@ import path from "path";
 import fs from "fs";
 
 // =============================================
-// DB-Pfad und Initialisierung
+// DB-Pfad und Singleton-Setup (WICHTIG!)
 // =============================================
 const dbPath = path.join(process.cwd(), "dev.db");
 
-// Datei erstellen, falls nicht vorhanden
+// --- LOGGING EINFÜGEN ---
+console.log("🔵 DB PATH (Global):", dbPath); 
+// Das zeigt uns im Terminal, ob beide Routen denselben Pfad nutzen
+
 if (!fs.existsSync(dbPath)) {
   fs.writeFileSync(dbPath, "");
 }
 
-const db = new Database(dbPath, { verbose: console.log });
+const globalForDb = globalThis as unknown as {
+  conn: ReturnType<typeof Database> | undefined;
+};
+
+const db = globalForDb.conn ?? new Database(dbPath, { verbose: console.log });
+
+// --- WAL MODE AKTIVIEREN ---
+// Das hilft oft bei Problemen, wo Daten "verschwinden" (nicht geflusht werden)
+db.pragma('journal_mode = WAL'); 
+
+if (process.env.NODE_ENV !== "production") {
+  globalForDb.conn = db;
+}
 
 // =============================================
 // Tabellen + Spalten anlegen / migrieren
@@ -30,7 +43,9 @@ db.exec(`
     stripeCustomerId TEXT,
     subscriptionStatus TEXT DEFAULT 'free',
     cancelAtPeriodEnd INTEGER DEFAULT 0,
-    currentPeriodEnd TEXT
+    currentPeriodEnd TEXT,
+    reset_tokens TEXT,
+    reset_expires TEXT
   );
 
   CREATE TABLE IF NOT EXISTS sessions (

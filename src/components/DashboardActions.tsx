@@ -16,6 +16,7 @@ import {
   ShieldAlert,
   Star
 } from "lucide-react";
+import { requireAdmin } from "@/lib/admin";
 
 interface DashboardActionsProps {
   userId: string;

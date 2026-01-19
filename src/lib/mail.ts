@@ -1,49 +1,29 @@
-import { Resend } from 'resend';
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { Resend } from "resend";
 
-export async function sendMail({
-  to,
-  subject,
-  html,
-}: {
-  to: string;
-  subject: string;
-  html: string;
-}) {
+const resend = new Resend(process.env.RESEND_API_KEY);
+const domain = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
+
+export const sendPasswordResetEmail = async (email: string, token: string) => {
+  // FEHLER-CHECK: In deinem Repo steht 'new-password', dein Ordner heißt aber 'reset-password'
+  const resetLink = `${domain}/auth/reset-password?token=${token}`;
+  
   try {
     const data = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'onboarding@resend.dev',
-      to,
-      subject,
-      html,
+      from: "onboarding@resend.dev",
+      to: email, // MUSS dein Resend-Account-Email sein, solange Domain nicht verifiziert
+      subject: "Passwort zurücksetzen",
+      html: `
+        <div style="font-family: sans-serif;">
+          <h1>Passwort-Reset angefordert</h1>
+          <p>Klicke auf den Link, um dein Passwort zu ändern:</p>
+          <a href="${resetLink}">${resetLink}</a>
+          <p>Der Link ist 1 Stunde gültig.</p>
+        </div>
+      `,
     });
-
-    return { success: true, data };
+    
+    return { data, error: null };
   } catch (error) {
-    console.error("E-Mail Fehler:", error);
-    return { success: false, error };
+    return { data: null, error };
   }
-}
-
-/**
- * Vorlage für die Passwort-Wiederherstellung.
- */
-export async function sendPasswordResetEmail(email: string, token: string) {
-  const resetLink = `${process.env.NEXT_PUBLIC_URL}/auth/reset-password?token=${token}`;
-
-  await sendMail({
-    to: email,
-    subject: "Passwort zurücksetzen - EU Boilerplate",
-    html: `
-      <div style="font-family: sans-serif; max-width: 600px; margin: auto;">
-        <h1>Passwort zurücksetzen</h1>
-        <p>Du hast eine Anfrage zum Zurücksetzen deines Passworts gestellt.</p>
-        <p>Klicke auf den folgenden Link, um ein neues Passwort zu vergeben:</p>
-        <a href="${resetLink}" style="display: inline-block; padding: 12px 24px; background-color: #2563eb; color: white; text-decoration: none; rounded: 8px;">Passwort zurücksetzen</a>
-        <p>Dieser Link ist für 1 Stunde gültig.</p>
-        <hr />
-        <p style="font-size: 12px; color: gray;">Falls du diese Anfrage nicht gestellt hast, kannst du diese Mail ignorieren.</p>
-      </div>
-    `,
-  });
-}
+};

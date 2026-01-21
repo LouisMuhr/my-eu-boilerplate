@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { dbHelpers, hashPassword, generateId } from "@/lib/db";
+import {hashPassword, generateId } from "@/lib/db";
+import { dbHelpersAsync } from "@/lib/db-new";
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,7 +15,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Prüfen, ob User schon existiert
-    const existingUser = dbHelpers.getUserByEmail.get(email);
+    const existingUser = await dbHelpersAsync.getUserByEmail(email);
     if (existingUser) {
       return NextResponse.json(
         { error: "Ein Account mit dieser E-Mail existiert bereits" },
@@ -27,13 +28,13 @@ export async function POST(req: NextRequest) {
 
     // Neuen User anlegen
     const id = generateId();
-    dbHelpers.createUser.run(
+    await dbHelpersAsync.createUser({
       id,
-      name || null,
+      name: name || null,
       email,
-      hashedPassword,
-      null,
-      "free"
+      password: hashedPassword,
+      subscriptionStatus: "free",
+    }
     );
 
     return NextResponse.json({

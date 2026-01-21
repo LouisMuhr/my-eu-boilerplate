@@ -1,29 +1,27 @@
+// Datei: src/lib/mail.ts
 import { Resend } from "resend";
+import { render } from "@react-email/render";
+import ResetPasswordEmail from "@/emails/ResetPasswordEmail";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const domain = process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
 
-export const sendPasswordResetEmail = async (email: string, token: string) => {
-  // FEHLER-CHECK: In deinem Repo steht 'new-password', dein Ordner heißt aber 'reset-password'
-  const resetLink = `${domain}/auth/reset-password?token=${token}`;
-  
+export async function sendPasswordResetEmail(email: string, token: string) {
+  // 1. Link bauen (Lokal vs Live beachten!)
+  const resetLink = `${process.env.NEXT_PUBLIC_URL}/auth/reset-password?token=${token}`;
+
+  // 2. React-Template zu HTML rendern
+  const emailHtml = await render(ResetPasswordEmail({ resetLink }));
+
   try {
-    const data = await resend.emails.send({
-      from: "onboarding@resend.dev",
-      to: email, // MUSS dein Resend-Account-Email sein, solange Domain nicht verifiziert
+    await resend.emails.send({
+      from: "Onboarding <onboarding@resend.dev>", // WICHTIG: Nur ändern, wenn du eine Domain bei Resend verifiziert hast!
+      to: email,
       subject: "Passwort zurücksetzen",
-      html: `
-        <div style="font-family: sans-serif;">
-          <h1>Passwort-Reset angefordert</h1>
-          <p>Klicke auf den Link, um dein Passwort zu ändern:</p>
-          <a href="${resetLink}">${resetLink}</a>
-          <p>Der Link ist 1 Stunde gültig.</p>
-        </div>
-      `,
+      html: emailHtml,
     });
-    
-    return { data, error: null };
+    console.log("📧 Email gesendet an:", email);
   } catch (error) {
-    return { data: null, error };
+    console.error("❌ Fehler beim Email-Senden:", error);
+    // Kein Throw, damit die UI nicht crasht
   }
-};
+}

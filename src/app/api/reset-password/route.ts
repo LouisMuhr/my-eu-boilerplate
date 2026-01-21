@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { dbHelpersAsync } from "@/lib/db-new"; // NEU
-import { hashPassword } from "@/lib/db";
+import { hashPassword } from "@/lib/auth-utils";
 
 export async function POST(req: Request) {
   try {

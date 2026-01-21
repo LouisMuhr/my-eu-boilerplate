@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import {hashPassword, generateId } from "@/lib/db";
+import {hashPassword, generateId } from "@/lib/auth-utils";
 import { dbHelpersAsync } from "@/lib/db-new";
 
 export async function POST(req: NextRequest) {

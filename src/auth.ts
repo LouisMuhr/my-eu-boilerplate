@@ -3,7 +3,7 @@ import { authConfig } from "./auth.config";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import { dbHelpersAsync } from "@/lib/db-new";
-import {verifyPassword } from "@/lib/db";
+import {verifyPassword } from "@/lib/auth-utils";
 
 // Diese Datei ist die ZENTRALE für alle Auth-Logik (Node.js Runtime)
 export const { handlers, auth, signIn, signOut } = NextAuth({

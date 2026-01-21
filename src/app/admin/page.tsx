@@ -1,7 +1,7 @@
 // Datei: src/app/admin/page.tsx
 
 import { requireAdmin } from "../../lib/admin";
-import { dbHelpers } from "../../lib/db";
+import { dbHelpersAsync } from "../../lib/db-new";
 import { 
   Users, 
   BadgeEuro, 
@@ -17,7 +17,7 @@ import Stripe from "stripe";
 
 // Stripe Initialisierung für dynamische Preisabfrage
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-12-15.clover",
+  apiVersion: "2024-09-30.acacia",
 });
 
 /**
@@ -33,7 +33,7 @@ export default async function AdminPage() {
 
   // 2. Daten laden (Alle User aus der lokalen SQLite)
   // Wir casten als any, um TypeScript-Hürden bei benutzerdefinierten Helpers zu umgehen
-  const users = (dbHelpers as any).getAllUsers.all() as any[];
+  const users = await (dbHelpersAsync as any).getAllUsers() as any[];
 
   // 3. Preis-Details von Stripe abrufen
   // Wir nehmen die ID aus der ENV und fragen Stripe nach dem Wert (in Cents)

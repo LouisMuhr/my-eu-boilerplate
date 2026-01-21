@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { dbHelpersAsync } from "@/lib/db-new"; // NEU
-import { generateId } from "@/lib/db";
+import { generateId } from "@/lib/auth-utils";
 import { sendPasswordResetEmail } from "@/lib/mail";
 import crypto from "crypto";
 

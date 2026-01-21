@@ -17,6 +17,7 @@ import {
   Star
 } from "lucide-react";
 import { requireAdmin } from "@/lib/admin";
+import { updateUserName } from "@/app/dashboard/actions";
 
 interface DashboardActionsProps {
   userId: string;
@@ -37,6 +38,7 @@ export default function DashboardActions({
 }: DashboardActionsProps) {
   const [loadingPortal, setLoadingPortal] = useState(false);
   const [loadingType, setLoadingType] = useState<"monthly" | "annual" | "profile" | "export" | "delete" | null>(null);
+  const [loading, setLoading] = useState<string | null>(null);
   const [name, setName] = useState(userName);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -72,20 +74,20 @@ export default function DashboardActions({
   };
 
   // --- PROFIL UPDATE ---
-  const handleUpdateProfile = async () => {
-    setLoadingType("profile");
-    try {
-      const res = await fetch("/api/user/update", {
-        method: "POST",
-        body: JSON.stringify({ name }),
-        headers: { "Content-Type": "application/json" },
-      });
-      if (res.ok) {
-        // Optional: Erfolgsmeldung anzeigen
-      }
-    } finally {
-      setLoadingType(null);
+const handleUpdateName = async () => {
+    setLoading("name");
+    const formData = new FormData();
+    formData.append("name", name);
+
+    const result = await updateUserName(formData);
+    
+    if (result.success) {
+      // Optional: Toast hier
+      alert("Name gespeichert!"); 
+    } else {
+      alert(result.error);
     }
+    setLoading(null);
   };
 
   // --- DSGVO DATEN EXPORT ---
@@ -197,7 +199,7 @@ export default function DashboardActions({
             <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full h-12 px-5 rounded-2xl border border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-950 font-bold text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
           </div>
           <button 
-            onClick={handleUpdateProfile} 
+            onClick={handleUpdateName} 
             disabled={loadingType === "profile"}
             className="w-full h-12 bg-gray-900 dark:bg-white dark:text-gray-900 text-white rounded-2xl font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-black transition-all cursor-pointer"
           >

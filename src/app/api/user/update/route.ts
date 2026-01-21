@@ -2,7 +2,7 @@
 
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { dbHelpers } from "@/lib/db";
+import { dbHelpersAsync } from "@/lib/db-new";
 
 export async function POST(req: Request) {
   try {
@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     }
 
     // Nutzt den updateUserProfile Helper aus src/lib/db.ts (siehe Canvas)
-    (dbHelpers as any).updateUserProfile.run(name, session.user.id);
+    await (dbHelpersAsync as any).updateUserProfile(name, session.user.id);
 
     return NextResponse.json({ success: true, message: "Profil aktualisiert." });
   } catch (error) {

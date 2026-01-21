@@ -2,7 +2,7 @@
 
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { dbHelpers } from "@/lib/db";
+import { dbHelpersAsync } from "@/lib/db-new";
 import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -16,7 +16,7 @@ export async function DELETE() {
       return NextResponse.json({ error: "Nicht autorisiert" }, { status: 401 });
     }
 
-    const user = dbHelpers.getUserById.get(session.user.id) as any;
+    const user = await dbHelpersAsync.getUserById(session.user.id) as any;
 
     // 1. Stripe Abo kündigen, falls vorhanden
     if (user?.stripeCustomerId) {
@@ -36,7 +36,7 @@ export async function DELETE() {
     }
 
     // 2. Nutzer aus der SQLite löschen (Helper ist in Canvas bereits vorhanden)
-    dbHelpers.deleteUser.run(session.user.id);
+    await dbHelpersAsync.deleteUser(session.user.id);
 
     return NextResponse.json({ success: true, message: "Account erfolgreich gelöscht." });
   } catch (error) {

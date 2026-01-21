@@ -2,7 +2,7 @@
 
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { dbHelpers } from "@/lib/db";
+import { dbHelpersAsync } from "@/lib/db-new";
 
 export async function GET() {
   try {
@@ -12,7 +12,7 @@ export async function GET() {
     }
 
     // Alle Daten des Nutzers aus der DB holen
-    const user = dbHelpers.getUserById.get(session.user.id) as any;
+    const user = await dbHelpersAsync.getUserById(session.user.id) as any;
 
     if (!user) {
       return NextResponse.json({ error: "Nutzer nicht gefunden" }, { status: 404 });

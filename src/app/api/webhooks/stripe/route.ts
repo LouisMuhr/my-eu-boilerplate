@@ -1,12 +1,14 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { dbHelpers } from "@/lib/db";
+import { dbHelpersAsync } from "@/lib/db-new"; // NEU
 import { formatStripeDate } from "@/lib/stripe-helper";
-import db from "@/lib/db";
+import { db } from "@/lib/drizzle"; // NEU für Fallback
+import { users } from "@/lib/schema"; // NEU für Fallback
+import { eq } from "drizzle-orm"; // NEU für Fallback
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-09-30.acacia", // DAS ist der stabile Anker
+  apiVersion: "2024-09-30.acacia",
 });
 
 export async function POST(req: Request) {
@@ -29,11 +31,16 @@ export async function POST(req: Request) {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
       if (session.metadata?.userId) {
-        dbHelpers.updateUserStripe.run(session.customer as string, "active", session.metadata.userId);
+        // NEU: await
+        await dbHelpersAsync.updateUserStripe(
+          session.customer as string, 
+          "active", 
+          session.metadata.userId
+        );
       }
     }
 
-    // 2. Abo-Daten aktualisieren (Stabile Felder nutzen)
+    // 2. Abo-Daten aktualisieren
     if (
       event.type === "customer.subscription.created" ||
       event.type === "customer.subscription.updated" ||
@@ -43,31 +50,29 @@ export async function POST(req: Request) {
       const subId = event.type.startsWith("invoice") ? obj.subscription : obj.id;
 
       if (subId && typeof subId === 'string') {
-        // In Version 17 ist 'retrieve' wieder ein direktes Objekt, kein Response-Müll!
         const subscription = await stripe.subscriptions.retrieve(subId);
-        
-        // current_period_end ist hier GARANTIERT eine Zahl (Unix Timestamp)
         const endDate = formatStripeDate(subscription.current_period_end);
         const userId = subscription.metadata?.userId;
 
         console.log(`📅 Sync für ${subscription.customer} - Ende: ${endDate}`);
 
-        // Update in der DB
-        const result = dbHelpers.updateUserSubscription.run(
+        // NEU: await und Result prüfen
+        const result = await dbHelpersAsync.updateUserSubscription(
           subscription.status,
           subscription.cancel_at_period_end ? 1 : 0,
-          endDate,
+          endDate as string,
           subscription.customer as string
         );
 
-        // Fallback falls die Stripe-ID noch nicht in der DB war (Race Condition)
-        if (result.changes === 0 && userId) {
+        // Fallback (Wenn Stripe ID noch nicht in DB war)
+        if (result.rowsAffected === 0 && userId) {
           console.log(`🔄 Fallback-Update via UserID: ${userId}`);
-          db.prepare(`
-            UPDATE users 
-            SET subscriptionStatus = ?, currentPeriodEnd = ?, stripeCustomerId = ? 
-            WHERE id = ?
-          `).run(subscription.status, endDate, subscription.customer as string, userId);
+          // Direktes Drizzle Update für den Fallback
+          await db.update(users).set({
+            subscriptionStatus: subscription.status,
+            currentPeriodEnd: endDate,
+            stripeCustomerId: subscription.customer as string
+          }).where(eq(users.id, userId));
         }
       }
     }

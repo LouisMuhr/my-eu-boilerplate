@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { dbHelpers, UserRow } from "@/lib/db";
+import { dbHelpersAsync, UserRow } from "@/lib/db-new";
 import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
@@ -15,7 +15,7 @@ export async function POST() {
     }
 
     // User aus der DB holen
-    const user = dbHelpers.getUserById.get(session.user.id) as UserRow | undefined;
+    const user = await dbHelpersAsync.getUserById(session.user.id) as UserRow | undefined;
 
     if (!user || !user.stripeCustomerId) {
       console.error("❌ Portal-Fehler: User hat keine stripeCustomerId in der DB.");

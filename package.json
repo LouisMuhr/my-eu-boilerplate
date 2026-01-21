@@ -11,6 +11,8 @@
   "dependencies": {
     "@libsql/client": "^0.17.0",
     "@radix-ui/react-slot": "^1.2.4",
+    "@react-email/components": "^1.0.6",
+    "@react-email/render": "^2.0.4",
     "@stripe/stripe-js": "^8.6.0",
     "@t3-oss/env-nextjs": "^0.13.10",
     "bcryptjs": "^3.0.3",

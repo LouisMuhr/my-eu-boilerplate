@@ -17,6 +17,7 @@ import {
   Star
 } from "lucide-react";
 import { updateUserName } from "@/app/dashboard/actions";
+import { toast } from "sonner";
 
 interface DashboardActionsProps {
   userId: string;
@@ -81,10 +82,9 @@ const handleUpdateName = async () => {
     const result = await updateUserName(formData);
     
     if (result.success) {
-      // Optional: Toast hier
-      alert("Name gespeichert!"); 
+      toast.success("Name erfolgreich gespeichert!");
     } else {
-      alert(result.error);
+      toast.error(result.error || "Etwas ist schiefgelaufen.");
     }
     setLoading(null);
   };

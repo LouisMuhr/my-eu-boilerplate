@@ -1,0 +1,11 @@
+{
+  "Common": {
+    "title": "EU Boilerplate",
+    "imprint": "Impressum",
+    "privacy": "Datenschutz"
+  },
+  "Dashboard": {
+    "welcome": "Willkommen zurück, {name}!",
+    "save": "Speichern"
+  }
+}

@@ -16,7 +16,7 @@ import {
   ShieldAlert,
   Star
 } from "lucide-react";
-import { updateUserName } from "@/app/dashboard/actions";
+import { updateUserName } from "@/app/[locale]/dashboard/actions";
 import { toast } from "sonner";
 
 interface DashboardActionsProps {

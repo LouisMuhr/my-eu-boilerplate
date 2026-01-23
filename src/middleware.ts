@@ -1,13 +1,20 @@
-import NextAuth from "next-auth";
-import { authConfig } from "./auth.config";
+// Datei: src/middleware.ts
+import createMiddleware from 'next-intl/middleware';
+import {routing} from './i18n/routing';
+import { auth } from "./auth";
 
-// Initialisierung nur mit Config (Edge Runtime kompatibel)
-const { auth } = NextAuth(authConfig);
+const intlMiddleware = createMiddleware(routing);
 
-// Default Export ist zwingend für Next.js Middleware
-export default auth;
+export default auth((req) => {
+  // 1. Wenn es eine API oder statische Datei ist, ignorieren
+  if (req.nextUrl.pathname.startsWith('/api') || req.nextUrl.pathname.includes('.')) {
+    return;
+  }
+
+  // 2. Internationalisierung anwenden
+  return intlMiddleware(req);
+});
 
 export const config = {
-  // Matcher ignoriert statische Files und API-Routen (damit Webhooks durchkommen!)
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: ['/((?!api|_next|.*\\..*).*)']
 };

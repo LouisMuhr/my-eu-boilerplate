@@ -1,9 +1,12 @@
 // Datei: src/middleware.ts
 import createMiddleware from 'next-intl/middleware';
 import {routing} from './i18n/routing';
-import { auth } from "./auth";
+import NextAuth from "next-auth";
+import { authConfig } from "./auth.config";
 
 const intlMiddleware = createMiddleware(routing);
+
+const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
   // 1. Wenn es eine API oder statische Datei ist, ignorieren

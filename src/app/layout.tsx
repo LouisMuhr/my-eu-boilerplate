@@ -1,8 +1,10 @@
 // Datei: src/app/layout.tsx
+
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./global.css";
-import { Toaster } from "sonner"; // DEIN TOASTER
+import { Toaster } from "sonner";
+import CookieConsent from "@/components/cookie-consent"; //
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,10 +16,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// Basis-Titel reicht völlig für die Entwicklung
 export const metadata: Metadata = {
   title: "EU Boilerplate",
-  description: "Next.js SaaS Starterkit",
+  description: "Das rechtssichere Next.js Starterkit",
 };
 
 export const viewport: Viewport = {
@@ -34,7 +35,12 @@ export default function RootLayout({
     <html lang="de" className="scroll-smooth">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         {children}
+        
+        {/* Die Toasts für System-Meldungen */}
         <Toaster richColors position="bottom-right" /> 
+        
+        {/* Der DSGVO-Türsteher */}
+        <CookieConsent /> 
       </body>
     </html>
   );

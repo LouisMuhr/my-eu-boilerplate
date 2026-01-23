@@ -28,6 +28,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "resend": "^6.6.0",
+    "sonner": "^2.0.7",
     "sqlite3": "^5.1.7",
     "stripe": "17.0.0",
     "stripe-cli": "^0.1.0",

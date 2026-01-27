@@ -15,6 +15,7 @@ import {
   Loader2,
   CheckCircle2
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export default function SignUpPage() {
   const [name, setName] = useState("");
@@ -23,6 +24,7 @@ export default function SignUpPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const t = useTranslations("Auth");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,13 +41,15 @@ export default function SignUpPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.error || "Registrierung fehlgeschlagen.");
+        const done = t("register_problem");
+        throw new Error(data.error || done);
       }
 
       // Erfolgreich -> Weiterleitung zum Login
       router.push("/auth/signin?registered=true");
     } catch (err: any) {
       setError(err.message);
+      console.log("Registration error:", err);
     } finally {
       setLoading(false);
     }
@@ -69,10 +73,10 @@ export default function SignUpPage() {
             <UserPlus className="w-7 h-7" />
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-2">
-            Account erstellen
+            {t("create")}
           </h1>
           <p className="text-gray-500 dark:text-gray-400">
-            Starte heute mit deinem rechtssicheren SaaS.
+            {t("info_text_4")}
           </p>
         </div>
 
@@ -95,7 +99,7 @@ export default function SignUpPage() {
           </div>
           <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-white dark:bg-gray-950 px-4 text-gray-500 font-medium">
-              Oder klassisch registrieren
+              {t("info_text_6")}
             </span>
           </div>
         </div>
@@ -112,7 +116,7 @@ export default function SignUpPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">
-              Vollständiger Name
+              {t("name")}
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -131,7 +135,7 @@ export default function SignUpPage() {
 
           <div className="space-y-2">
             <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">
-              E-Mail Adresse
+              {t("email")}
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -150,7 +154,7 @@ export default function SignUpPage() {
 
           <div className="space-y-2">
             <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">
-              Passwort
+              {t("password")}
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -169,9 +173,9 @@ export default function SignUpPage() {
 
           <div className="pt-2">
             <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed text-center px-4">
-              Mit der Registrierung akzeptierst du unsere{" "}
-              <Link href="/legal/privacy" className="text-blue-600 hover:underline">Datenschutzerklärung</Link> und die{" "}
-              <Link href="/legal/imprint" className="text-blue-600 hover:underline">AGB</Link>.
+              {t("info_text_3")}{" "}
+              <Link href="/legal/privacy" className="text-blue-600 hover:underline">{t("privacy_policy")}</Link> & {" "}
+              <Link href="/legal/imprint" className="text-blue-600 hover:underline">{t("terms_of_service")}</Link>
             </p>
           </div>
 
@@ -183,18 +187,18 @@ export default function SignUpPage() {
             {loading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
-              "Account erstellen"
+              t("create")
             )}
           </button>
         </form>
 
         <p className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
-          Bereits ein Konto?{" "}
+          {t("hasAccount")}{" "}
           <Link 
             href="/auth/signin" 
             className="font-bold text-blue-600 hover:underline"
           >
-            Jetzt einloggen
+            {t("login_now")}
           </Link>
         </p>
 
@@ -202,7 +206,7 @@ export default function SignUpPage() {
         <div className="mt-12 flex items-center justify-center gap-2 opacity-40">
            <CheckCircle2 className="w-3 h-3" />
            <p className="text-[10px] uppercase tracking-widest font-medium">
-             DSGVO-Konforme Datenspeicherung
+             {t("info_text_5")}
            </p>
         </div>
       </div>

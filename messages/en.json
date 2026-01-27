@@ -4,10 +4,6 @@
     "imprint": "Imprint",
     "privacy": "Privacy"
   },
-  "Dashboard": {
-    "welcome": "Welcome back, {name}!",
-    "save": "Save"
-  },
   "Legal": {
     "imprint": "Imprint",
     "privacy": "Privacy Policy",
@@ -37,5 +33,27 @@
     "cookies_title": "6. Cookies",
     "cookies_text": "We only use cookies for technical functionality and, with your consent, for analytics. You can withdraw your consent at any time.",
     "disclaimer": "Disclaimer: This template was created for {name}. It does not constitute legal advice."
+  },
+  "Dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back, ",
+    "profile": "Your Profile",
+    "email": "Email",
+    "memberSince": "Member since",
+    "actions": "Actions",
+    "saveName": "Save Name",
+    "saving": "Saving...",
+    "billingPortal": "Go to Billing Portal",
+    "nameUpdated": "Name saved successfully!",
+    "errorUpdate": "Error during update."
+  },
+  "Auth": {
+    "signin": "Sign In",
+    "signup": "Sign Up",
+    "noAccount": "No account? Sign up here",
+    "hasAccount": "Already have an account? Sign in here",
+    "email": "Email address",
+    "password": "Password",
+    "name": "Full Name"
   }
 }

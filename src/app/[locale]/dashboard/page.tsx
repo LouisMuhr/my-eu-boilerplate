@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 
 /**
  * DashboardPage - Die zentrale Übersicht für den Nutzer.
@@ -24,6 +25,7 @@ import { redirect } from "next/navigation";
 export default async function DashboardPage() {
   const session = await auth();
 
+  const t = await getTranslations("Dashboard");
   // Schutz der Route: Wenn keine Session vorhanden ist, Umleitung zum Login
   if (!session?.user?.id) {
     redirect("/auth/signin");
@@ -195,7 +197,7 @@ export default async function DashboardPage() {
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div className="text-left">
               <h3 className="text-3xl font-black tracking-tight text-slate-900 dark:text-white">
-                Willkommen zurück, {userRow?.name?.split(" ")[0]}!
+                {t("welcome")}{userRow?.name?.split(" ")[0]}!
               </h3>
               <p className="text-slate-500 mt-1">
                 Hier ist eine Zusammenfassung deiner Ressourcen und deines

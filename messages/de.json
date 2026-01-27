@@ -4,10 +4,6 @@
     "imprint": "Impressum",
     "privacy": "Datenschutz"
   },
-  "Dashboard": {
-    "welcome": "Willkommen zurück, {name}!",
-    "save": "Speichern"
-  },
   "Legal": {
     "imprint": "Impressum",
     "privacy": "Datenschutzerklärung",
@@ -37,5 +33,27 @@
     "cookies_title": "6. Cookies",
     "cookies_text": "Wir verwenden Cookies nur für technische Funktionalität und nach deiner Einwilligung für Analytics. Die Einwilligung kannst du jederzeit widerrufen.",
     "disclaimer": "Disclaimer: Diese Vorlage wurde für die {name} erstellt. Sie stellt keine Rechtsberatung dar."
+  },
+  "Dashboard": {
+    "title": "Dashboard",
+    "welcome": "Willkommen zurück, ",
+    "profile": "Dein Profil",
+    "email": "E-Mail",
+    "memberSince": "Mitglied seit",
+    "actions": "Aktionen",
+    "saveName": "Namen speichern",
+    "saving": "Wird gespeichert...",
+    "billingPortal": "Zum Stripe Billing Portal",
+    "nameUpdated": "Name erfolgreich gespeichert!",
+    "errorUpdate": "Fehler beim Speichern."
+  },
+  "Auth": {
+    "signin": "Anmelden",
+    "signup": "Registrieren",
+    "noAccount": "Noch kein Konto? Hier registrieren",
+    "hasAccount": "Bereits ein Konto? Hier anmelden",
+    "email": "E-Mail-Adresse",
+    "password": "Passwort",
+    "name": "Vollständiger Name"
   }
 }

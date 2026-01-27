@@ -1,7 +1,7 @@
 // Datei: src/app/admin/page.tsx
 
-import { requireAdmin } from "../../lib/admin";
-import { dbHelpersAsync } from "../../lib/db-new";
+import { requireAdmin } from "../../../lib/admin";
+import { dbHelpersAsync } from "../../../lib/db-new";
 import { 
   Users, 
   BadgeEuro, 

@@ -1,0 +1,59 @@
+{
+  "Common": {
+    "title": "EU Boilerplate",
+    "imprint": "Imprint",
+    "privacy": "Privacy"
+  },
+  "Legal": {
+    "imprint": "Imprint",
+    "privacy": "Privacy Policy",
+    "tmg": "Information according to § 5 TMG",
+    "contact": "Contact",
+    "vatId": "VAT ID",
+    "responsible": "Responsible for content",
+    "rights": "Your Rights (GDPR)"
+  },
+  "Privacy": {
+    "title": "Privacy Policy",
+    "intro_title": "1. Privacy at a Glance",
+    "intro_text": "We take the protection of your personal data very seriously. This privacy policy informs you about the type, scope, and purpose of processing personal data within our online offer.",
+    "responsible_title": "2. Data Controller",
+    "collection_title": "3. Data Collection on our Website",
+    "collection_logs_title": "Server Log Files",
+    "collection_logs_text": "The provider of the pages automatically collects and stores information in server log files (IP address, browser type, referrer URL, time). This data is technically necessary.",
+    "collection_auth_title": "Registration and Login",
+    "collection_auth_text": "We store the data provided by you during registration (email, name, password hash) to provide your user account.",
+    "sharing_title": "4. Third Parties & Data Processing",
+    "sharing_text": "To provide our services, we use the following partners:",
+    "stripe_desc": "Stripe (Payments): Data is transferred to Stripe to process payments.",
+    "resend_desc": "Resend (Email): For sending system emails (e.g., password reset).",
+    "sentry_desc": "Sentry (Error Tracking): To improve stability, we collect anonymized error reports.",
+    "rights_title": "5. Your Rights (GDPR)",
+    "rights_text": "You have the right at any time to access, correct, delete, and transfer your data stored by us. Contact {email} for this.",
+    "cookies_title": "6. Cookies",
+    "cookies_text": "We only use cookies for technical functionality and, with your consent, for analytics. You can withdraw your consent at any time.",
+    "disclaimer": "Disclaimer: This template was created for {name}. It does not constitute legal advice."
+  },
+  "Dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome back, ",
+    "profile": "Your Profile",
+    "email": "Email",
+    "memberSince": "Member since",
+    "actions": "Actions",
+    "saveName": "Save Name",
+    "saving": "Saving...",
+    "billingPortal": "Go to Billing Portal",
+    "nameUpdated": "Name saved successfully!",
+    "errorUpdate": "Error during update."
+  },
+  "Auth": {
+    "signin": "Sign In",
+    "signup": "Sign Up",
+    "noAccount": "No account? Sign up here",
+    "hasAccount": "Already have an account? Sign in here",
+    "email": "Email address",
+    "password": "Password",
+    "name": "Full Name"
+  }
+}

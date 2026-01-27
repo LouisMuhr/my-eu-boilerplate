@@ -1,0 +1,59 @@
+{
+  "Common": {
+    "title": "EU Boilerplate",
+    "imprint": "Impressum",
+    "privacy": "Datenschutz"
+  },
+  "Legal": {
+    "imprint": "Impressum",
+    "privacy": "Datenschutzerklärung",
+    "tmg": "Angaben gemäß § 5 TMG",
+    "contact": "Kontakt",
+    "vatId": "Umsatzsteuer-ID",
+    "responsible": "Verantwortlich für den Inhalt",
+    "rights": "Deine Rechte (DSGVO)"
+  },
+  "Privacy": {
+    "title": "Datenschutzerklärung",
+    "intro_title": "1. Datenschutz auf einen Blick",
+    "intro_text": "Wir nehmen den Schutz deiner persönlichen Daten sehr ernst. Diese Datenschutzerklärung informiert dich über Art, Umfang und Zweck der Verarbeitung personenbezogener Daten innerhalb unseres Onlineangebotes.",
+    "responsible_title": "2. Verantwortlicher",
+    "collection_title": "3. Datenerhebung auf unserer Website",
+    "collection_logs_title": "Server-Log-Dateien",
+    "collection_logs_text": "Der Provider der Seiten erhebt und speichert automatisch Informationen in Server-Log-Dateien (IP-Adresse, Browsertyp, Referrer URL, Uhrzeit). Diese Daten sind technisch notwendig.",
+    "collection_auth_title": "Registrierung und Login",
+    "collection_auth_text": "Wir speichern die von dir im Rahmen der Registrierung angegebenen Daten (E-Mail, Name, Passwort-Hash) zur Bereitstellung deines Nutzerkontos.",
+    "sharing_title": "4. Drittanbieter & Auftragsverarbeitung",
+    "sharing_text": "Zur Erbringung unserer Dienste nutzen wir folgende Partner:",
+    "stripe_desc": "Stripe (Zahlungen): Zur Abwicklung von Zahlungen werden Daten an Stripe übertragen.",
+    "resend_desc": "Resend (E-Mail): Für den Versand von System-E-Mails (z.B. Passwort-Reset).",
+    "sentry_desc": "Sentry (Error-Tracking): Zur Verbesserung der Stabilität erfassen wir anonymisierte Fehlermeldungen.",
+    "rights_title": "5. Deine Rechte (DSGVO)",
+    "rights_text": "Du hast jederzeit das Recht auf Auskunft, Berichtigung, Löschung und Datenübertragbarkeit deiner bei uns gespeicherten Daten. Wende dich hierzu an {email}.",
+    "cookies_title": "6. Cookies",
+    "cookies_text": "Wir verwenden Cookies nur für technische Funktionalität und nach deiner Einwilligung für Analytics. Die Einwilligung kannst du jederzeit widerrufen.",
+    "disclaimer": "Disclaimer: Diese Vorlage wurde für die {name} erstellt. Sie stellt keine Rechtsberatung dar."
+  },
+  "Dashboard": {
+    "title": "Dashboard",
+    "welcome": "Willkommen zurück, ",
+    "profile": "Dein Profil",
+    "email": "E-Mail",
+    "memberSince": "Mitglied seit",
+    "actions": "Aktionen",
+    "saveName": "Namen speichern",
+    "saving": "Wird gespeichert...",
+    "billingPortal": "Zum Stripe Billing Portal",
+    "nameUpdated": "Name erfolgreich gespeichert!",
+    "errorUpdate": "Fehler beim Speichern."
+  },
+  "Auth": {
+    "signin": "Anmelden",
+    "signup": "Registrieren",
+    "noAccount": "Noch kein Konto? Hier registrieren",
+    "hasAccount": "Bereits ein Konto? Hier anmelden",
+    "email": "E-Mail-Adresse",
+    "password": "Passwort",
+    "name": "Vollständiger Name"
+  }
+}

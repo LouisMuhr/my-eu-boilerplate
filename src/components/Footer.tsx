@@ -1,4 +1,3 @@
-// Datei: src/components/Footer.tsx
 import Link from "next/link";
 import { siteConfig } from "@/lib/config";
 

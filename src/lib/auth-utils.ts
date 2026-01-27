@@ -1,6 +1,6 @@
 // Datei: src/lib/auth-utils.ts
 import bcrypt from "bcryptjs";
-import { randomUUID } from "crypto";
+import { randomUUID } from "node:crypto"; // 'node:' Präfix hinzufügen
 
 export function generateId(): string {
   return randomUUID();

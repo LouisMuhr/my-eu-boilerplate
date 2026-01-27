@@ -223,19 +223,6 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
-
-        {/* --- FOOTER --- */}
-        <footer className="border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-900">
-          <div className="container mx-auto px-4 py-12 flex flex-col md:flex-row justify-between items-center gap-6">
-             <div className="text-sm text-gray-500">
-               © 2026 My EU Boilerplate. Built in Europe.
-             </div>
-             <div className="flex gap-6 text-sm text-gray-600 dark:text-gray-400">
-               <Link href="/legal/imprint" className="hover:underline">Impressum</Link>
-               <Link href="/legal/privacy" className="hover:underline">Datenschutz</Link>
-             </div>
-          </div>
-        </footer>
       </main>
     </div>
   );

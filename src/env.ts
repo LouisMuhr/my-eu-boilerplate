@@ -10,7 +10,6 @@ import { z } from "zod";
  * 
  * Das ist besser als ein kryptischer Fehler um 3 Uhr nachts in Production.
  */
-console.log("🔥 ENV VALIDATION WIRD GELADEN");
 export const env = createEnv({
   // ===================
   // SERVER-VARIABLEN

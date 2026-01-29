@@ -2,12 +2,41 @@ import NextAuth from "next-auth";
 import { authConfig } from "./auth.config";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
+import GitHub from "next-auth/providers/github";
 import { dbHelpersAsync } from "@/lib/db-new";
-import {verifyPassword } from "@/lib/auth-utils";
+import { verifyPassword, generateId } from "@/lib/auth-utils";
+import { env } from "@/env";
 
-// Diese Datei ist die ZENTRALE für alle Auth-Logik (Node.js Runtime)
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
+  callbacks: {
+    ...authConfig.callbacks,
+    async signIn({ user, account }) {
+      if (account?.provider === "credentials") {
+        return true;
+      }
+
+      if (user.email) {
+        const existingUser = await dbHelpersAsync.getUserByEmail(user.email);
+        
+        if (existingUser) {
+          user.id = existingUser.id;
+        } else {
+          const newId = generateId();
+          await dbHelpersAsync.createUser({
+            id: newId,
+            email: user.email,
+            name: user.name || null,
+            password: null,
+            subscriptionStatus: "free",
+          });
+          user.id = newId;
+        }
+      }
+
+      return true;
+    },
+  },
   providers: [
     Credentials({
       async authorize(credentials) {
@@ -22,11 +51,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return { id: row.id, name: row.name, email: row.email };
       },
     }),
-    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+    ...(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET
       ? [
           Google({
-            clientId: process.env.GOOGLE_CLIENT_ID,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            clientId: env.GOOGLE_CLIENT_ID,
+            clientSecret: env.GOOGLE_CLIENT_SECRET,
+          }),
+        ]
+      : []),
+    ...(env.GITHUB_CLIENT_ID && env.GITHUB_CLIENT_SECRET
+      ? [
+          GitHub({
+            clientId: env.GITHUB_CLIENT_ID,
+            clientSecret: env.GITHUB_CLIENT_SECRET,
           }),
         ]
       : []),

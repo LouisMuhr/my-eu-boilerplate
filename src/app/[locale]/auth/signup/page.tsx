@@ -3,19 +3,20 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { 
-  Github, 
-  Chrome, 
-  ArrowLeft, 
-  UserPlus, 
-  Mail, 
+import {
+  GithubIcon,
+  ChromeIcon ,
+  ArrowLeft,
+  UserPlus,
+  Mail,
   Lock,
   User,
   AlertCircle,
   Loader2,
-  CheckCircle2
+  CheckCircle2,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { signIn } from "next-auth/react";
 
 export default function SignUpPage() {
   const [name, setName] = useState("");
@@ -58,8 +59,8 @@ export default function SignUpPage() {
   return (
     <main className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-950 p-4 selection:bg-blue-100 dark:selection:bg-blue-900">
       {/* Back to Home */}
-      <Link 
-        href="/" 
+      <Link
+        href="/"
         className="absolute top-8 left-8 flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" />
@@ -75,19 +76,23 @@ export default function SignUpPage() {
           <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-2">
             {t("create")}
           </h1>
-          <p className="text-gray-500 dark:text-gray-400">
-            {t("info_text_4")}
-          </p>
+          <p className="text-gray-500 dark:text-gray-400">{t("info_text_4")}</p>
         </div>
 
         {/* Social Logins */}
         <div className="grid grid-cols-2 gap-4 mb-8">
-          <button className="flex items-center justify-center gap-2 h-12 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all font-medium text-sm text-gray-700 dark:text-gray-300 shadow-sm">
-            <Chrome className="w-5 h-5 text-blue-500" />
+          <button
+            onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+            className="flex items-center justify-center gap-2 h-12 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all font-medium text-sm text-gray-700 dark:text-gray-300 shadow-sm"
+          >
+            <ChromeIcon className="w-5 h-5 text-blue-500" />
             Google
           </button>
-          <button className="flex items-center justify-center gap-2 h-12 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all font-medium text-sm text-gray-700 dark:text-gray-300 shadow-sm">
-            <Github className="w-5 h-5" />
+          <button
+            onClick={() => signIn("github", { callbackUrl: "/dashboard" })}
+            className="flex items-center justify-center gap-2 h-12 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all font-medium text-sm text-gray-700 dark:text-gray-300 shadow-sm"
+          >
+            <GithubIcon className="w-5 h-5" />
             GitHub
           </button>
         </div>
@@ -174,8 +179,19 @@ export default function SignUpPage() {
           <div className="pt-2">
             <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed text-center px-4">
               {t("info_text_3")}{" "}
-              <Link href="/legal/privacy" className="text-blue-600 hover:underline">{t("privacy_policy")}</Link> & {" "}
-              <Link href="/legal/imprint" className="text-blue-600 hover:underline">{t("terms_of_service")}</Link>
+              <Link
+                href="/legal/privacy"
+                className="text-blue-600 hover:underline"
+              >
+                {t("privacy_policy")}
+              </Link>{" "}
+              &{" "}
+              <Link
+                href="/legal/imprint"
+                className="text-blue-600 hover:underline"
+              >
+                {t("terms_of_service")}
+              </Link>
             </p>
           </div>
 
@@ -194,8 +210,8 @@ export default function SignUpPage() {
 
         <p className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
           {t("hasAccount")}{" "}
-          <Link 
-            href="/auth/signin" 
+          <Link
+            href="/auth/signin"
             className="font-bold text-blue-600 hover:underline"
           >
             {t("login_now")}
@@ -204,10 +220,10 @@ export default function SignUpPage() {
 
         {/* Compliance Note */}
         <div className="mt-12 flex items-center justify-center gap-2 opacity-40">
-           <CheckCircle2 className="w-3 h-3" />
-           <p className="text-[10px] uppercase tracking-widest font-medium">
-             {t("info_text_5")}
-           </p>
+          <CheckCircle2 className="w-3 h-3" />
+          <p className="text-[10px] uppercase tracking-widest font-medium">
+            {t("info_text_5")}
+          </p>
         </div>
       </div>
     </main>

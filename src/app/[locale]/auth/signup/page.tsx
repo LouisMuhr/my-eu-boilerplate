@@ -4,8 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  Github,
-  Chrome,
+  GithubIcon,
+  ChromeIcon ,
   ArrowLeft,
   UserPlus,
   Mail,
@@ -85,14 +85,14 @@ export default function SignUpPage() {
             onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
             className="flex items-center justify-center gap-2 h-12 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all font-medium text-sm text-gray-700 dark:text-gray-300 shadow-sm"
           >
-            <Chrome className="w-5 h-5 text-blue-500" />
+            <ChromeIcon className="w-5 h-5 text-blue-500" />
             Google
           </button>
           <button
             onClick={() => signIn("github", { callbackUrl: "/dashboard" })}
             className="flex items-center justify-center gap-2 h-12 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all font-medium text-sm text-gray-700 dark:text-gray-300 shadow-sm"
           >
-            <Github className="w-5 h-5" />
+            <GithubIcon className="w-5 h-5" />
             GitHub
           </button>
         </div>

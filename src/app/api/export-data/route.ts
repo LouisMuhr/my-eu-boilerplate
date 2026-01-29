@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { dbHelpersAsync } from "@/lib/db-new";
 
+
 export async function GET() {
   try {
     const session = await auth();

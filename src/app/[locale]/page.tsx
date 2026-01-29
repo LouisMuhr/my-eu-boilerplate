@@ -16,7 +16,6 @@ import LocaleSwitcher from "@/components/LocaleSwitcher";
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 selection:bg-blue-100 dark:selection:bg-blue-900">
-      
       {/* --- NAVIGATION --- */}
       <header className="fixed top-0 w-full z-50 border-b border-gray-200 dark:border-gray-800 glass">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">

@@ -1,6 +1,6 @@
 // Datei: src/lib/db-new.ts
 import { db } from "./drizzle";
-import { users, passwordResetTokens } from "./schema";
+import { users, passwordResetTokens, verificationTokens } from "./schema";
 import { eq } from "drizzle-orm";
 
 // Typen exportieren, damit der Rest der App nicht meckert
@@ -9,12 +9,20 @@ export type UserRow = typeof users.$inferSelect;
 export const dbHelpersAsync = {
   // --- USER CORE ---
   async getUserByEmail(email: string) {
-    const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    const result = await db
+      .select()
+      .from(users)
+      .where(eq(users.email, email))
+      .limit(1);
     return result[0];
   },
 
   async getUserById(id: string) {
-    const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+    const result = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, id))
+      .limit(1);
     return result[0];
   },
 
@@ -26,30 +34,41 @@ export const dbHelpersAsync = {
   async updateUserProfile(id: string, name: string) {
     return await db.update(users).set({ name }).where(eq(users.id, id));
   },
-  
+
   // --- ADMIN ---
   async deleteUser(id: string) {
-      return await db.delete(users).where(eq(users.id, id));
+    return await db.delete(users).where(eq(users.id, id));
   },
-  
+
   async getAllUsers() {
-      return await db.select().from(users);
+    return await db.select().from(users);
   },
 
   // --- STRIPE ---
-  async updateUserStripe(stripeCustomerId: string, subscriptionStatus: string, id: string) {
-     return await db.update(users)
-       .set({ stripeCustomerId, subscriptionStatus })
-       .where(eq(users.id, id));
+  async updateUserStripe(
+    stripeCustomerId: string,
+    subscriptionStatus: string,
+    id: string,
+  ) {
+    return await db
+      .update(users)
+      .set({ stripeCustomerId, subscriptionStatus })
+      .where(eq(users.id, id));
   },
 
-  async updateUserSubscription(status: string, cancelAtPeriodEnd: number, currentPeriodEnd: string, stripeCustomerId: string) {
+  async updateUserSubscription(
+    status: string,
+    cancelAtPeriodEnd: number,
+    currentPeriodEnd: string,
+    stripeCustomerId: string,
+  ) {
     // Konvertiert 0/1 zu boolean für Drizzle
-    return await db.update(users)
+    return await db
+      .update(users)
       .set({
         subscriptionStatus: status,
-        cancelAtPeriodEnd: !!cancelAtPeriodEnd, 
-        currentPeriodEnd: currentPeriodEnd
+        cancelAtPeriodEnd: !!cancelAtPeriodEnd,
+        currentPeriodEnd: currentPeriodEnd,
       })
       .where(eq(users.stripeCustomerId, stripeCustomerId));
   },
@@ -69,10 +88,41 @@ export const dbHelpersAsync = {
   },
 
   async deleteResetToken(id: string) {
-    return await db.delete(passwordResetTokens).where(eq(passwordResetTokens.id, id));
+    return await db
+      .delete(passwordResetTokens)
+      .where(eq(passwordResetTokens.id, id));
   },
-  
+
   async updateUserPassword(password: string, email: string) {
-      return await db.update(users).set({ password }).where(eq(users.email, email));
-  }
+    return await db
+      .update(users)
+      .set({ password })
+      .where(eq(users.email, email));
+  },
+  // === EMAIL VERIFICATION ===
+  async createVerificationToken(data: typeof verificationTokens.$inferInsert) {
+    return await db.insert(verificationTokens).values(data);
+  },
+
+  async getVerificationTokenByToken(token: string) {
+    const result = await db
+      .select()
+      .from(verificationTokens)
+      .where(eq(verificationTokens.token, token))
+      .limit(1);
+    return result[0];
+  },
+
+  async deleteVerificationToken(id: string) {
+    return await db
+      .delete(verificationTokens)
+      .where(eq(verificationTokens.id, id));
+  },
+
+  async verifyUserEmail(email: string) {
+    return await db
+      .update(users)
+      .set({ emailVerified: true })
+      .where(eq(users.email, email));
+  },
 };

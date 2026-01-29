@@ -18,7 +18,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       if (user.email) {
         const existingUser = await dbHelpersAsync.getUserByEmail(user.email);
-        
+
         if (existingUser) {
           user.id = existingUser.id;
         } else {
@@ -41,11 +41,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Credentials({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
-        
-        const row = await dbHelpersAsync.getUserByEmail(credentials.email as string) as any;
+
+        const row = (await dbHelpersAsync.getUserByEmail(
+          credentials.email as string,
+        )) as any;
         if (!row || !row.password) return null;
 
-        const valid = await verifyPassword(credentials.password as string, row.password);
+        if (!row.emailVerified) {
+          throw new Error("E-Mail nicht bestätigt. Bitte prüfe dein Postfach.");
+        }
+
+        const valid = await verifyPassword(
+          credentials.password as string,
+          row.password,
+        );
         if (!valid) return null;
 
         return { id: row.id, name: row.name, email: row.email };

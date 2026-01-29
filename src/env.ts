@@ -75,6 +75,9 @@ export const env = createEnv({
       .string()
       .startsWith("price_", "NEXT_PUBLIC_STRIPE_PRICE_YEARLY muss mit 'price_' beginnen")
       .optional(),
+
+    // === SENTRY (Optional) ===
+    NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
   },
 
   // ===================
@@ -100,6 +103,7 @@ export const env = createEnv({
     NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
     NEXT_PUBLIC_STRIPE_PRICE_MONTHLY: process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY,
     NEXT_PUBLIC_STRIPE_PRICE_YEARLY: process.env.NEXT_PUBLIC_STRIPE_PRICE_YEARLY,
+    NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
   },
 
   // ===================

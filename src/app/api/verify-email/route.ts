@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbHelpersAsync } from "@/lib/db-new";
+import { rateLimit, rateLimitResponse, getIP } from "@/lib/rate-limit";
 
 export async function GET(req: NextRequest) {
+  const ip = getIP(req);
+  const limit = rateLimit(ip, { max: 10, windowMs: 60_000 });
+  if (!limit.success) return rateLimitResponse(limit.resetTime);
+
   try {
     const token = req.nextUrl.searchParams.get("token");
 

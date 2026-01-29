@@ -3,8 +3,13 @@ import { dbHelpersAsync } from "@/lib/db-new"; // NEU
 import { generateId } from "@/lib/auth-utils";
 import { sendPasswordResetEmail } from "@/lib/mail";
 import crypto from "crypto";
+import { rateLimit, rateLimitResponse, getIP } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
+  const ip = getIP(req);
+  const limit = rateLimit(ip, { max: 3, windowMs: 60_000 });
+  if (!limit.success) return rateLimitResponse(limit.resetTime);
+
   try {
     const { email } = await req.json();
 

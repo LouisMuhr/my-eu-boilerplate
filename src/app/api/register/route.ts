@@ -5,8 +5,13 @@ import { registerSchema } from "@/lib/validations";
 import { sendVerificationEmail } from "@/lib/mail";
 import { ZodError } from "zod";
 import crypto from "crypto";
+import { rateLimit, rateLimitResponse, getIP } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
+  const ip = getIP(req);
+  const limit = rateLimit(ip, { max: 5, windowMs: 60_000 });
+  if (!limit.success) return rateLimitResponse(limit.resetTime);
+
   try {
     const body = await req.json();
     const { email, password, name } = registerSchema.parse(body);

@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server";
 import { dbHelpersAsync } from "@/lib/db-new"; // NEU
 import { hashPassword } from "@/lib/auth-utils";
+import { rateLimit, rateLimitResponse, getIP } from "@/lib/rate-limit";
 
 export async function POST(req: Request) {
+  const ip = getIP(req);
+  const limit = rateLimit(ip, { max: 5, windowMs: 60_000 });
+  if (!limit.success) return rateLimitResponse(limit.resetTime);
+
   try {
     const { token, password } = await req.json();
 

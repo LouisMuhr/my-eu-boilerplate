@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth"; 
 import Stripe from "stripe";
+import { env } from "@/env";
 
 // WICHTIG: Wir nutzen die Version, die dein Paket verlangt!
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {
   apiVersion: "2024-09-30.acacia", // <--- Deine Version
 });
 
@@ -25,8 +26,8 @@ export async function POST(req: Request) {
         },
       ],
       mode: "subscription",
-      success_url: `${process.env.NEXT_PUBLIC_URL}/dashboard?success=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_URL}/dashboard?canceled=true`,
+      success_url: `${env.NEXT_PUBLIC_URL}/dashboard?success=true`,
+      cancel_url: `${env.NEXT_PUBLIC_URL}/dashboard?canceled=true`,
       
       // Metadaten für die Session
       metadata: {

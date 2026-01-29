@@ -4,8 +4,9 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { dbHelpersAsync } from "@/lib/db-new";
 import Stripe from "stripe";
+import { env } from "@/env";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {
   apiVersion: "2025-12-15.clover" as any,
 });
 

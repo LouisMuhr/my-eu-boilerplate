@@ -12,7 +12,7 @@ import { Chrome, Github,
   AlertCircle,
   Loader2
 } from "lucide-react";
-
+import { useTranslations } from "next-intl";
 
 
 export default function SignInPage() {
@@ -20,6 +20,7 @@ export default function SignInPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const t = useTranslations("Auth");
    const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -34,9 +35,9 @@ export default function SignInPage() {
         password,
         redirect: false,
       });
-
       if (result?.error) {
-        setError("Die Anmeldedaten sind nicht korrekt. Bitte versuche es erneut.");
+        const r = t("data_error");
+        setError(r);
       } else {
         router.push("/dashboard");
         router.refresh();
@@ -66,10 +67,10 @@ export default function SignInPage() {
             <Shield className="w-7 h-7" />
           </div>
           <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-2">
-            Willkommen zurück
+            {t("welcome")}
           </h1>
           <p className="text-gray-500 dark:text-gray-400">
-            Logge dich in dein EU-Boilerplate Konto ein.
+            {t("info_text")}
           </p>
         </div>
 
@@ -98,7 +99,7 @@ export default function SignInPage() {
           </div>
           <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-white dark:bg-gray-950 px-4 text-gray-500 font-medium">
-              Oder mit E-Mail fortfahren
+              {t("email_text")}
             </span>
           </div>
         </div>
@@ -115,7 +116,7 @@ export default function SignInPage() {
         <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-2">
             <label className="text-sm font-semibold text-gray-700 dark:text-gray-300 ml-1">
-              E-Mail Adresse
+              {t("email")}
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
@@ -135,13 +136,13 @@ export default function SignInPage() {
           <div className="space-y-2">
             <div className="flex justify-between items-center ml-1">
               <label className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                Passwort
+                {t("password")}
               </label>
               <Link 
                 href="/auth/forgot-password" 
                 className="text-xs font-medium text-blue-600 hover:underline"
               >
-                Vergessen?
+                {t("forgotPassword")}
               </Link>
             </div>
             <div className="relative">
@@ -167,24 +168,24 @@ export default function SignInPage() {
             {loading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
-              "Anmelden"
+              t("signin")
             )}
           </button>
         </form>
 
         <p className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
-          Noch keinen Account?{" "}
+          {t("noAccount")}{" "}
           <Link 
             href="/auth/signup" 
             className="font-bold text-blue-600 hover:underline"
           >
-            Kostenlos registrieren
+            {t("freeSignUp")}
           </Link>
         </p>
 
         {/* Compliance Note */}
         <p className="mt-12 text-center text-[10px] text-gray-400 dark:text-gray-600 uppercase tracking-widest font-medium">
-          Sicherer Login via NextAuth v5 & AES-256 Verschlüsselung
+          {t("info_text_2")}
         </p>
       </div>
     </main>

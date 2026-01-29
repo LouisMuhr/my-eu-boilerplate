@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { dbHelpersAsync, UserRow } from "@/lib/db-new";
 import Stripe from "stripe";
+import { env } from "@/env";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {
   apiVersion: "2024-09-30.acacia", // Bleib bei der stabilen Version!
 });
 
@@ -27,7 +28,7 @@ export async function POST() {
     // Portal Session erstellen
     const portalSession = await stripe.billingPortal.sessions.create({
       customer: user.stripeCustomerId,
-      return_url: `${process.env.NEXT_PUBLIC_URL}/dashboard`,
+      return_url: `${env.NEXT_PUBLIC_URL}/dashboard`,
     });
 
     if (!portalSession.url) {

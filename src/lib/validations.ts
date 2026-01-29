@@ -1,5 +1,7 @@
 // Datei: src/lib/validations.ts  <-- NEUER NAME!
 import { z } from "zod";
+import { useTranslations } from "next-intl";
+const t = useTranslations("Auth");
 
 export const emailSchema = z.string().email("Ungültige E-Mail-Adresse").min(5).max(255);
 export const passwordSchema = z.string().min(8, "Passwort muss mind. 8 Zeichen haben").max(100);

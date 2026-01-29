@@ -6,8 +6,9 @@ import { formatStripeDate } from "@/lib/stripe-helper";
 import { db } from "@/lib/drizzle"; // NEU für Fallback
 import { users } from "@/lib/schema"; // NEU für Fallback
 import { eq } from "drizzle-orm"; // NEU für Fallback
+import { env } from "@/env";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {
   apiVersion: "2024-09-30.acacia",
 });
 
@@ -18,7 +19,7 @@ export async function POST(req: Request) {
   let event: Stripe.Event;
 
   try {
-    event = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET!);
+    event = stripe.webhooks.constructEvent(body, signature,env.STRIPE_WEBHOOK_SECRET!);
   } catch (error: any) {
     console.error("❌ Webhook Signatur Fehler");
     return new NextResponse("Webhook Error", { status: 400 });

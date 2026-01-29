@@ -48,12 +48,33 @@
     "errorUpdate": "Error during update."
   },
   "Auth": {
-    "signin": "Sign In",
-    "signup": "Sign Up",
-    "noAccount": "No account? Sign up here",
-    "hasAccount": "Already have an account? Sign in here",
+    "welcome": "Welcome back",
+    "info_text": "Log in to your EU-Boilerplate account",
+    "email_text": "Or continue with email",
     "email": "Email address",
     "password": "Password",
-    "name": "Full Name"
+    "forgotPassword": "Forgot password?",
+    "noAccount": "Don't have an account?",
+    "freeSignUp": "Sign up for free",
+    "info_text_2": "Secure login via NextAuth v5 & AES-256 encryption",
+    "data_error": "Incorrect login details. Please try again",
+    "signup": "Sign up",
+    "signin": "Log in",
+    "hasAccount": "Already have an account?",
+    "login_now": "Log in here",
+    "name": "Full name",
+    "info_text_3": "By registering, you accept our",
+    "create": "Create account",
+    "info_text_4": "Start your legally secure SaaS today",
+    "info_text_5": "GDPR-compliant data storage",
+    "error": "Email is already in use",
+    "password_error": "Password must be at least 8 characters long",
+    "info_text_6": "Or register traditionally",
+    "name_error_short": "Name too short",
+    "name_error_long": "Name too long",
+    "privacy_policy": "Privacy Policy",
+    "terms_of_service": "Terms of Service",
+    "register_problem": "Register failed",
+    "email_problem": "Unvalid E-Mail-addresse"
   }
 }

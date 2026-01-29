@@ -7,6 +7,7 @@ export const users = sqliteTable("users", {
   name: text("name"),
   email: text("email").notNull().unique(),
   password: text("password"),
+  emailVerified: integer("emailVerified", { mode: "boolean" }).default(false), // NEU
   stripeCustomerId: text("stripeCustomerId"),
   subscriptionStatus: text("subscriptionStatus").default("free"),
   cancelAtPeriodEnd: integer("cancelAtPeriodEnd", { mode: "boolean" }).default(false),
@@ -27,4 +28,11 @@ export const passwordResetTokens = sqliteTable("password_reset_tokens", {
   email: text("email").notNull(),
   token: text("token").notNull().unique(),
   expires: text("expires").notNull(), // ISO String
+});
+
+export const verificationTokens = sqliteTable("verification_tokens", {
+  id: text("id").primaryKey(),
+  email: text("email").notNull(),
+  token: text("token").notNull().unique(),
+  expires: text("expires").notNull(),
 });

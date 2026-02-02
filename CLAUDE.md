@@ -17,9 +17,9 @@ Next.js 15 SaaS Boilerplate mit EU-Compliance (DSGVO, Impressum, etc.)
 - [x] E-Mail-Verifizierung (Double Opt-In)
 - [x] Sentry Error Monitoring (Server + Client + Replay)
 - [x] Rate Limiting auf /api/auth/* (in-memory, per IP)
+- [x] Security Headers in next.config.ts
 
 ## Noch offen (Sprint Woche 1)
-- [ ] Security Headers in next.config.ts
 - [ ] Einheitliche Stripe-Version
 
 ## Wichtige Dateien
@@ -31,6 +31,7 @@ Next.js 15 SaaS Boilerplate mit EU-Compliance (DSGVO, Impressum, etc.)
 ## Regeln
 - Nutze `env.VARIABLE` statt `process.env.VARIABLE`
 - Sei direkt und ehrlich, keine Schönrederei
+- Niemals im main branch arbeiten
 ```
 
 Claude Code liest diese Datei automatisch und kennt dann den Kontext.

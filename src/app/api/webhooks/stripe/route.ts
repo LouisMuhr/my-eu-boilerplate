@@ -9,7 +9,7 @@ import { eq } from "drizzle-orm"; // NEU für Fallback
 import { env } from "@/env";
 
 const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2026-01-28.clover",
+  apiVersion: "2024-11-20.acacia",
 });
 
 export async function POST(req: Request) {
@@ -57,14 +57,25 @@ export async function POST(req: Request) {
         const customerId = (subscription as any).customer as string;
 
         console.log(`📅 Sync für ${customerId} - Ende: ${endDate}`);
+        console.log(`🔍 Debug: status=${(subscription as any).status}, cancel_at_period_end=${(subscription as any).cancel_at_period_end}, customerId=${customerId}`);
+        console.log(`🔍 Full subscription data:`, JSON.stringify({
+          id: (subscription as any).id,
+          status: (subscription as any).status,
+          cancel_at_period_end: (subscription as any).cancel_at_period_end,
+          canceled_at: (subscription as any).canceled_at,
+          current_period_end: (subscription as any).current_period_end,
+          metadata: (subscription as any).metadata
+        }, null, 2));
 
         // Try to update via stripeCustomerId first
-        await dbHelpersAsync.updateUserSubscription(
+        const updateResult = await dbHelpersAsync.updateUserSubscription(
           (subscription as any).status,
           (subscription as any).cancel_at_period_end ? 1 : 0,
           endDate as string,
           customerId
         );
+
+        console.log(`✅ Update attempted for customerId: ${customerId}`);
 
         // Fallback: Check if user exists with this stripeCustomerId, if not use userId
         const userCheck = await db.select().from(users).where(eq(users.stripeCustomerId, customerId)).limit(1);

@@ -54,25 +54,28 @@ export async function POST(req: Request) {
         const subscription = await stripe.subscriptions.retrieve(subId);
         const endDate = formatStripeDate((subscription as any).current_period_end);
         const userId = (subscription as any).metadata?.userId;
+        const customerId = (subscription as any).customer as string;
 
-        console.log(`📅 Sync für ${(subscription as any).customer} - Ende: ${endDate}`);
+        console.log(`📅 Sync für ${customerId} - Ende: ${endDate}`);
 
-        // NEU: await und Result prüfen
-        const result = await dbHelpersAsync.updateUserSubscription(
+        // Try to update via stripeCustomerId first
+        await dbHelpersAsync.updateUserSubscription(
           (subscription as any).status,
           (subscription as any).cancel_at_period_end ? 1 : 0,
           endDate as string,
-          (subscription as any).customer as string
+          customerId
         );
 
-        // Fallback (Wenn Stripe ID noch nicht in DB war)
-        if (result.rowsAffected === 0 && userId) {
+        // Fallback: Check if user exists with this stripeCustomerId, if not use userId
+        const userCheck = await db.select().from(users).where(eq(users.stripeCustomerId, customerId)).limit(1);
+
+        if (userCheck.length === 0 && userId) {
           console.log(`🔄 Fallback-Update via UserID: ${userId}`);
-          // Direktes Drizzle Update für den Fallback
           await db.update(users).set({
             subscriptionStatus: (subscription as any).status,
+            cancelAtPeriodEnd: !!(subscription as any).cancel_at_period_end,
             currentPeriodEnd: endDate,
-            stripeCustomerId: (subscription as any).customer as string
+            stripeCustomerId: customerId
           }).where(eq(users.id, userId));
         }
       }

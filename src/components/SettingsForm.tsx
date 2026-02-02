@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter, usePathname } from "next/navigation";
+import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import {
   Shield,
@@ -13,12 +14,22 @@ import {
   Lock,
   Mail,
   Sparkles,
+  Sun,
+  Moon,
+  Monitor,
 } from "lucide-react";
 
 export default function SettingsForm() {
   const t = useTranslations("Settings");
   const router = useRouter();
   const pathname = usePathname();
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // State for password change
   const [currentPassword, setCurrentPassword] = useState("");
@@ -153,6 +164,86 @@ export default function SettingsForm() {
                   <Sparkles className="absolute -top-1 -right-1 w-4 h-4 text-amber-400 animate-pulse" />
                 )}
                 🇬🇧 English
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Theme Switcher - Compact Design */}
+      <div className="relative group">
+        <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-yellow-500/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
+
+        <div className="relative bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl border-2 border-slate-200/50 dark:border-slate-800/50 shadow-xl hover:shadow-2xl transition-all duration-500 p-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl blur-md opacity-50"></div>
+                <div className="relative p-2 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl">
+                  {mounted && theme === "dark" ? (
+                    <Moon className="w-5 h-5 text-white" />
+                  ) : mounted && theme === "light" ? (
+                    <Sun className="w-5 h-5 text-white" />
+                  ) : (
+                    <Monitor className="w-5 h-5 text-white" />
+                  )}
+                </div>
+              </div>
+              <div>
+                <p className="font-black text-sm text-slate-900 dark:text-white uppercase tracking-tight">
+                  {t("preferences.theme")}
+                </p>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold">
+                  {t("preferences.themeDesc")}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setTheme("light")}
+                disabled={!mounted}
+                className={`relative px-4 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-105 flex items-center gap-2 ${
+                  mounted && theme === "light"
+                    ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg shadow-amber-500/30"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
+                }`}
+              >
+                {mounted && theme === "light" && (
+                  <Sparkles className="w-4 h-4 text-white animate-pulse" />
+                )}
+                <Sun className="w-4 h-4" />
+                <span className="hidden sm:inline">{t("preferences.light")}</span>
+              </button>
+              <button
+                onClick={() => setTheme("dark")}
+                disabled={!mounted}
+                className={`relative px-4 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-105 flex items-center gap-2 ${
+                  mounted && theme === "dark"
+                    ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/30"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
+                }`}
+              >
+                {mounted && theme === "dark" && (
+                  <Sparkles className="w-4 h-4 text-white animate-pulse" />
+                )}
+                <Moon className="w-4 h-4" />
+                <span className="hidden sm:inline">{t("preferences.dark")}</span>
+              </button>
+              <button
+                onClick={() => setTheme("system")}
+                disabled={!mounted}
+                className={`relative px-4 py-2.5 rounded-xl font-bold text-sm transition-all hover:scale-105 flex items-center gap-2 ${
+                  mounted && theme === "system"
+                    ? "bg-gradient-to-r from-slate-600 to-slate-700 text-white shadow-lg shadow-slate-500/30"
+                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
+                }`}
+              >
+                {mounted && theme === "system" && (
+                  <Sparkles className="w-4 h-4 text-white animate-pulse" />
+                )}
+                <Monitor className="w-4 h-4" />
+                <span className="hidden sm:inline">{t("preferences.system")}</span>
               </button>
             </div>
           </div>

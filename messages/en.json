@@ -57,6 +57,50 @@
       "days": "days"
     }
   },
+  "Settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account settings",
+    "security": {
+      "title": "Security",
+      "subtitle": "Password and login credentials",
+      "changePassword": "Change Password",
+      "currentPassword": "Current Password",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm Password",
+      "updatePassword": "Update Password",
+      "passwordUpdated": "Password updated successfully",
+      "passwordError": "Error updating password",
+      "passwordMismatch": "Passwords do not match",
+      "passwordTooShort": "Password must be at least 8 characters"
+    },
+    "preferences": {
+      "title": "Preferences",
+      "subtitle": "Personalize your experience",
+      "language": "Language",
+      "languageDesc": "Choose your preferred language",
+      "german": "Deutsch",
+      "english": "English",
+      "theme": "Theme",
+      "themeDesc": "Select your preferred theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "notifications": {
+      "title": "Notifications",
+      "subtitle": "Manage email notifications",
+      "marketing": "Marketing Emails",
+      "marketingDesc": "Receive updates about new features and offers",
+      "updates": "Product Updates",
+      "updatesDesc": "Notifications about important updates",
+      "security": "Security Alerts",
+      "securityDesc": "Alerts about suspicious activity",
+      "saved": "Notification preferences saved"
+    },
+    "save": "Save",
+    "saving": "Saving...",
+    "cancel": "Cancel"
+  },
   "Auth": {
     "welcome": "Welcome back",
     "info_text": "Log in to your EU-Boilerplate account",

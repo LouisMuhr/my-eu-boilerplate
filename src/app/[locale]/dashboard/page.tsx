@@ -68,15 +68,15 @@ export default async function DashboardPage() {
   // Dynamische Metriken basierend auf echten Daten
   const stats = [
     {
-      label: t("Dashboard.stats.accountStatus"),
-      value: userRow?.emailVerified ? t("Dashboard.stats.verified") : t("Dashboard.stats.pending"),
+      label: t("stats.accountStatus"),
+      value: userRow?.emailVerified ? t("stats.verified") : t("stats.pending"),
       icon: ShieldCheck,
       color: userRow?.emailVerified ? "text-emerald-500" : "text-amber-500",
     },
     {
-      label: t("Dashboard.stats.subscription"),
+      label: t("stats.subscription"),
       value: subscriptionStatus === "active"
-        ? (isCanceled ? t("Dashboard.stats.ending") : t("Dashboard.stats.active"))
+        ? (isCanceled ? t("stats.ending") : t("stats.active"))
         : "Free",
       icon: subscriptionStatus === "active" ? Zap : Box,
       color: subscriptionStatus === "active"
@@ -84,8 +84,8 @@ export default async function DashboardPage() {
         : "text-slate-500",
     },
     {
-      label: t("Dashboard.stats.planExpiry"),
-      value: daysRemaining !== null ? `${daysRemaining} ${t("Dashboard.stats.days")}` : "–",
+      label: t("stats.planExpiry"),
+      value: daysRemaining !== null ? `${daysRemaining} ${t("stats.days")}` : "–",
       icon: Activity,
       color: daysRemaining !== null && daysRemaining < 7 ? "text-red-500" : "text-blue-500",
     },
@@ -124,10 +124,13 @@ export default async function DashboardPage() {
             </div>
             <ChevronRight size={14} />
           </Link>
-          <div className="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl font-medium transition-colors cursor-pointer group">
+          <Link
+            href="/dashboard/settings"
+            className="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-xl font-medium transition-colors cursor-pointer group"
+          >
             <Settings className="w-5 h-5 group-hover:rotate-45 transition-transform" />{" "}
             <span>Einstellungen</span>
-          </div>
+          </Link>
         </nav>
 
         {/* Kurze Nutzerinfo im Footer der Sidebar */}

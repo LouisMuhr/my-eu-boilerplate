@@ -7,7 +7,7 @@ import Stripe from "stripe";
 import { env } from "@/env";
 
 const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2025-12-15.clover" as any,
+  apiVersion: "2024-11-20.acacia",
 });
 
 export async function DELETE() {

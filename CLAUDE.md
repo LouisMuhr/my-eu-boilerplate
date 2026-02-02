@@ -18,9 +18,7 @@ Next.js 15 SaaS Boilerplate mit EU-Compliance (DSGVO, Impressum, etc.)
 - [x] Sentry Error Monitoring (Server + Client + Replay)
 - [x] Rate Limiting auf /api/auth/* (in-memory, per IP)
 - [x] Security Headers in next.config.ts
-
-## Noch offen (Sprint Woche 1)
-- [ ] Einheitliche Stripe-Version
+- [x] Einheitliche Stripe-Version
 
 ## Wichtige Dateien
 - src/auth.ts – NextAuth Konfiguration

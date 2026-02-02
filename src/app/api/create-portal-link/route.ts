@@ -5,7 +5,7 @@ import Stripe from "stripe";
 import { env } from "@/env";
 
 const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-09-30.acacia", // Bleib bei der stabilen Version!
+  apiVersion: "2026-01-28.clover",
 });
 
 export async function POST() {

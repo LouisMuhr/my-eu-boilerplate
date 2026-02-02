@@ -9,7 +9,7 @@ import { eq } from "drizzle-orm"; // NEU für Fallback
 import { env } from "@/env";
 
 const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-09-30.acacia",
+  apiVersion: "2026-01-28.clover",
 });
 
 export async function POST(req: Request) {
@@ -52,17 +52,17 @@ export async function POST(req: Request) {
 
       if (subId && typeof subId === 'string') {
         const subscription = await stripe.subscriptions.retrieve(subId);
-        const endDate = formatStripeDate(subscription.current_period_end);
-        const userId = subscription.metadata?.userId;
+        const endDate = formatStripeDate((subscription as any).current_period_end);
+        const userId = (subscription as any).metadata?.userId;
 
-        console.log(`📅 Sync für ${subscription.customer} - Ende: ${endDate}`);
+        console.log(`📅 Sync für ${(subscription as any).customer} - Ende: ${endDate}`);
 
         // NEU: await und Result prüfen
         const result = await dbHelpersAsync.updateUserSubscription(
-          subscription.status,
-          subscription.cancel_at_period_end ? 1 : 0,
+          (subscription as any).status,
+          (subscription as any).cancel_at_period_end ? 1 : 0,
           endDate as string,
-          subscription.customer as string
+          (subscription as any).customer as string
         );
 
         // Fallback (Wenn Stripe ID noch nicht in DB war)
@@ -70,9 +70,9 @@ export async function POST(req: Request) {
           console.log(`🔄 Fallback-Update via UserID: ${userId}`);
           // Direktes Drizzle Update für den Fallback
           await db.update(users).set({
-            subscriptionStatus: subscription.status,
+            subscriptionStatus: (subscription as any).status,
             currentPeriodEnd: endDate,
-            stripeCustomerId: subscription.customer as string
+            stripeCustomerId: (subscription as any).customer as string
           }).where(eq(users.id, userId));
         }
       }

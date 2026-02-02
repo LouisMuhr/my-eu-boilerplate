@@ -3,9 +3,8 @@ import { auth } from "@/auth";
 import Stripe from "stripe";
 import { env } from "@/env";
 
-// WICHTIG: Wir nutzen die Version, die dein Paket verlangt!
 const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-09-30.acacia", // <--- Deine Version
+  apiVersion: "2026-01-28.clover",
 });
 
 export async function POST(req: Request) {

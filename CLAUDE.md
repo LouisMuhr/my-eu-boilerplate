@@ -20,6 +20,13 @@ Next.js 15 SaaS Boilerplate mit EU-Compliance (DSGVO, Impressum, etc.)
 - [x] Security Headers in next.config.ts
 - [x] Einheitliche Stripe-Version
 
+## Sprint Woche 2 – Verkaufbarkeit
+- [ ] Dokumentation (README, Setup-Guide, API-Docs)
+- [ ] Demo-Feature (Showcase-Feature zur Demonstration)
+- [ ] Landing Page mit Screenshots
+- [ ] Video-Walkthrough
+- [ ] AGB-Template (Terms of Service)
+
 ## Wichtige Dateien
 - src/auth.ts – NextAuth Konfiguration
 - src/env.ts – Env-Validation

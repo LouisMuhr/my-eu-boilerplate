@@ -20,14 +20,14 @@ Next.js 15 SaaS Boilerplate mit EU-Compliance (DSGVO, Impressum, etc.)
 - [x] Security Headers in next.config.ts
 - [x] Einheitliche Stripe-Version
 
-## Sprint Woche 2 – Frontend & UX fertigstellen
-- [ ] Dashboard polieren (nicht nur ein leerer Platzhalter)
-- [ ] Auth-Pages konsistent gestalten
-- [ ] Pricing-Page funktional
-- [ ] Cookie-Banner professionell
-- [ ] Responsive überall
-- [ ] Loading States, Error States
-- [ ] Dark Mode konsequent
+## Sprint Woche 2 – Frontend & UX fertigstellen ✅
+- [x] Dashboard polieren (nicht nur ein leerer Platzhalter)
+- [x] Auth-Pages konsistent gestalten
+- [x] Pricing-Page funktional
+- [x] Cookie-Banner professionell
+- [x] Responsive überall
+- [x] Loading States, Error States
+- [x] Dark Mode konsequent
 
 ## Sprint Woche 3 – Verkaufbarkeit
 - [ ] Dokumentation (README, Setup-Guide, API-Docs)

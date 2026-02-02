@@ -14,10 +14,11 @@ import {
 import Link from "next/link";
 import AdminTable from "./AdminTable"; // Die Client-Komponente für Interaktion
 import Stripe from "stripe";
+import { env } from "@/env";
 
 // Stripe Initialisierung für dynamische Preisabfrage
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2024-11-20.acacia",
+const stripe = new Stripe(env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2024-11-20.acacia" as any,
 });
 
 /**
@@ -41,14 +42,14 @@ export default async function AdminPage() {
   let currency = "eur";
   
   try {
-    const priceId = process.env.NEXT_PUBLIC_STRIPE_PRICE_SUBSCRIPTION;
+    const priceId = env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY;
     if (priceId) {
       const price = await stripe.prices.retrieve(priceId);
       unitAmount = price.unit_amount || 0;
       currency = price.currency;
     } else {
       // Fallback auf Wert aus ENV, falls keine Price-ID vorhanden
-      unitAmount = parseInt(process.env.STRIPE_PRICE_AMOUNT || "999", 10);
+      unitAmount = 999;
     }
   } catch (error) {
     console.error("Stripe Price Fetch Fehler:", error);

@@ -45,7 +45,17 @@
     "saving": "Saving...",
     "billingPortal": "Go to Billing Portal",
     "nameUpdated": "Name saved successfully!",
-    "errorUpdate": "Error during update."
+    "errorUpdate": "Error during update.",
+    "stats": {
+      "accountStatus": "Account Status",
+      "verified": "Verified",
+      "pending": "Pending",
+      "subscription": "Subscription",
+      "active": "Active",
+      "ending": "Ending Soon",
+      "planExpiry": "Days Remaining",
+      "days": "days"
+    }
   },
   "Auth": {
     "welcome": "Welcome back",

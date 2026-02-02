@@ -38,7 +38,17 @@
     "title": "Dashboard",
     "welcome": "Willkommen zurück, ",
     "profile": "Dein Profil",
-    "email": "E-Mail"
+    "email": "E-Mail",
+    "stats": {
+      "accountStatus": "Account-Status",
+      "verified": "Verifiziert",
+      "pending": "Ausstehend",
+      "subscription": "Abonnement",
+      "active": "Aktiv",
+      "ending": "Endet bald",
+      "planExpiry": "Verbleibende Tage",
+      "days": "Tage"
+    }
   },
   "Auth": {
     "welcome": "Willkommen zurück",

@@ -55,25 +55,39 @@ export default async function DashboardPage() {
       })
     : "Unbekannt";
 
-  // Metriken für das UI-Grid (Können später durch echte DB-Abfragen ersetzt werden)
+  // Berechne Account-Alter in Tagen (falls createdAt vorhanden wäre)
+  const accountAgeDays = userRow?.emailVerified
+    ? Math.floor((Date.now() - new Date(userRow.emailVerified as any).getTime()) / (1000 * 60 * 60 * 24))
+    : 0;
+
+  // Berechne verbleibende Tage für bezahlte Nutzer
+  const daysRemaining = userRow?.currentPeriodEnd && subscriptionStatus === "active"
+    ? Math.max(0, Math.floor((new Date(userRow.currentPeriodEnd).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))
+    : null;
+
+  // Dynamische Metriken basierend auf echten Daten
   const stats = [
     {
-      label: "Nutzungsrate",
-      value: "92%",
-      icon: TrendingUp,
-      color: "text-emerald-500",
+      label: t("Dashboard.stats.accountStatus"),
+      value: userRow?.emailVerified ? t("Dashboard.stats.verified") : t("Dashboard.stats.pending"),
+      icon: ShieldCheck,
+      color: userRow?.emailVerified ? "text-emerald-500" : "text-amber-500",
     },
     {
-      label: "Aktive Projekte",
-      value: "4",
-      icon: Box,
-      color: "text-indigo-500",
+      label: t("Dashboard.stats.subscription"),
+      value: subscriptionStatus === "active"
+        ? (isCanceled ? t("Dashboard.stats.ending") : t("Dashboard.stats.active"))
+        : "Free",
+      icon: subscriptionStatus === "active" ? Zap : Box,
+      color: subscriptionStatus === "active"
+        ? (isCanceled ? "text-amber-500" : "text-indigo-500")
+        : "text-slate-500",
     },
     {
-      label: "API Status",
-      value: "Online",
+      label: t("Dashboard.stats.planExpiry"),
+      value: daysRemaining !== null ? `${daysRemaining} ${t("Dashboard.stats.days")}` : "–",
       icon: Activity,
-      color: "text-blue-500",
+      color: daysRemaining !== null && daysRemaining < 7 ? "text-red-500" : "text-blue-500",
     },
   ];
 
@@ -210,28 +224,66 @@ export default async function DashboardPage() {
             </div>
           </div>
 
+          {/* Quick Actions Bar */}
+          <div className="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-950/30 dark:to-blue-950/30 rounded-2xl p-6 border border-indigo-100 dark:border-indigo-900/30">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-sm font-black text-indigo-900 dark:text-indigo-100 mb-1">
+                  Schnellzugriff
+                </h3>
+                <p className="text-xs text-indigo-600 dark:text-indigo-400">
+                  Häufig genutzte Aktionen
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {subscriptionStatus === "free" && (
+                  <Link
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      document.querySelector('[class*="Abrechnung"]')?.scrollIntoView({ behavior: 'smooth' });
+                    }}
+                    className="px-4 py-2 bg-indigo-600 text-white text-xs font-bold rounded-xl hover:bg-indigo-700 transition-all flex items-center gap-2"
+                  >
+                    <Zap size={14} />
+                    Upgrade auf Pro
+                  </Link>
+                )}
+                <Link
+                  href="/dashboard"
+                  className="px-4 py-2 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition-all border border-slate-200 dark:border-slate-700"
+                >
+                  Einstellungen
+                </Link>
+              </div>
+            </div>
+          </div>
+
           {/* Grid für Kurzinformationen (Stats) */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-left">
             {stats.map((stat, i) => (
               <div
                 key={i}
-                className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all group"
+                className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-lg hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-300 group cursor-pointer relative overflow-hidden"
               >
+                {/* Animated background gradient on hover */}
+                <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/0 to-blue-50/0 group-hover:from-indigo-50/50 group-hover:to-blue-50/50 dark:group-hover:from-indigo-950/20 dark:group-hover:to-blue-950/20 transition-all duration-300 -z-10" />
+
                 <div className="flex items-center justify-between mb-4 text-left">
                   <div
-                    className={`p-2 rounded-lg bg-slate-50 dark:bg-slate-800 group-hover:scale-110 transition-transform`}
+                    className={`p-2 rounded-lg bg-slate-50 dark:bg-slate-800 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300`}
                   >
                     <stat.icon size={20} className={stat.color} />
                   </div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     Live
                   </span>
                 </div>
                 <div className="flex flex-col text-left">
-                  <span className="text-2xl font-black tracking-tight">
+                  <span className="text-2xl font-black tracking-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">
                     {stat.value}
                   </span>
-                  <span className="text-xs font-medium text-slate-500">
+                  <span className="text-xs font-medium text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300 transition-colors duration-300">
                     {stat.label}
                   </span>
                 </div>

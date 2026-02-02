@@ -2,13 +2,16 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { 
-  Lock, 
-  Loader2, 
-  CheckCircle2, 
+import Link from "next/link";
+import {
+  Lock,
+  Loader2,
+  CheckCircle2,
   AlertCircle,
-  ShieldCheck,
-  ArrowRight
+  Sparkles,
+  Shield,
+  KeyRound,
+  ArrowRight,
 } from "lucide-react";
 
 function ResetPasswordForm() {
@@ -24,11 +27,37 @@ function ResetPasswordForm() {
 
   if (!token) {
     return (
-      <div className="text-center p-8 bg-red-50 dark:bg-red-900/20 rounded-2xl border border-red-100 dark:border-red-900/30">
-        <AlertCircle className="w-10 h-10 text-red-600 mx-auto mb-4" />
-        <h2 className="text-xl font-bold text-red-800 dark:text-red-400">Ungültiger Link</h2>
-        <p className="text-sm text-red-600 dark:text-red-400/80 mt-2">Dieser Link zum Zurücksetzen des Passworts ist ungültig oder abgelaufen.</p>
-        <a href="/auth/forgot-password" className="inline-block mt-6 text-sm font-bold text-blue-600 hover:underline">Neuen Link anfordern</a>
+      <div className="relative group">
+        <div className="absolute -inset-1 bg-gradient-to-r from-red-500/20 via-rose-500/20 to-red-500/20 rounded-3xl blur-xl opacity-75 group-hover:opacity-100 transition-all duration-500"></div>
+        <div className="relative bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl rounded-3xl border-2 border-red-200/50 dark:border-red-900/50 shadow-2xl p-10 text-center space-y-6 animate-in fade-in zoom-in-95 duration-500">
+          <div className="inline-flex items-center justify-center">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-red-500 to-rose-500 rounded-3xl blur-lg opacity-50 animate-pulse"></div>
+              <div className="relative w-16 h-16 bg-gradient-to-br from-red-500 to-rose-500 rounded-3xl flex items-center justify-center text-white shadow-lg shadow-red-500/50">
+                <AlertCircle className="w-8 h-8" strokeWidth={2.5} />
+              </div>
+            </div>
+          </div>
+          <div>
+            <h2 className="text-3xl font-black tracking-tight bg-gradient-to-r from-red-600 via-rose-600 to-red-600 dark:from-red-400 dark:via-rose-400 dark:to-red-400 bg-clip-text text-transparent mb-2">
+              Ungültiger Link
+            </h2>
+            <p className="text-slate-600 dark:text-slate-400">
+              Dieser Link zum Zurücksetzen des Passworts ist ungültig oder abgelaufen.
+            </p>
+          </div>
+          <Link
+            href="/auth/forgot-password"
+            className="group/btn relative inline-block w-full overflow-hidden rounded-2xl transition-all hover:scale-[1.02]"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r from-red-600 to-rose-600"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-red-700 to-rose-700 opacity-0 group-hover/btn:opacity-100 transition-opacity"></div>
+            <div className="relative flex items-center justify-center gap-2 h-14 text-white font-black text-sm uppercase tracking-widest">
+              <KeyRound className="w-5 h-5" />
+              Neuen Link anfordern
+            </div>
+          </Link>
+        </div>
       </div>
     );
   }
@@ -64,58 +93,99 @@ function ResetPasswordForm() {
 
   if (success) {
     return (
-      <div className="text-center p-8 bg-green-50 dark:bg-green-900/20 rounded-2xl border border-green-100 dark:border-green-900/30 space-y-4">
-        <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto" />
-        <h2 className="text-2xl font-bold text-green-800 dark:text-green-300">Erfolg!</h2>
-        <p className="text-sm text-green-700 dark:text-green-400">Dein Passwort wurde geändert. Du wirst in Kürze zum Login weitergeleitet...</p>
+      <div className="relative group">
+        <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-green-500/20 rounded-3xl blur-xl opacity-75 group-hover:opacity-100 transition-all duration-500"></div>
+        <div className="relative bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl rounded-3xl border-2 border-slate-200/50 dark:border-slate-800/50 shadow-2xl p-10 text-center space-y-6 animate-in fade-in zoom-in-95 duration-500">
+          <div className="inline-flex items-center justify-center">
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-3xl blur-2xl opacity-50 animate-pulse"></div>
+              <div className="relative w-24 h-24 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/50">
+                <CheckCircle2 className="w-12 h-12 text-white" strokeWidth={3} />
+              </div>
+            </div>
+          </div>
+          <div>
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <h2 className="text-4xl font-black tracking-tight bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 dark:from-emerald-400 dark:via-teal-400 dark:to-emerald-400 bg-clip-text text-transparent">
+                Passwort geändert!
+              </h2>
+              <Sparkles className="w-6 h-6 text-amber-500" />
+            </div>
+            <p className="text-slate-600 dark:text-slate-400">
+              Dein Passwort wurde erfolgreich geändert. Du wirst zum Login weitergeleitet...
+            </p>
+          </div>
+          <div className="flex items-center justify-center gap-2 text-emerald-600 dark:text-emerald-400">
+            <Loader2 className="w-5 h-5 animate-spin" />
+            <span className="text-sm font-bold">Weiterleitung...</span>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-5">
+      {/* Error Message */}
+      {error && (
+        <div className="p-4 rounded-2xl bg-red-50 dark:bg-red-900/20 border-2 border-red-200 dark:border-red-900/30 flex items-start gap-3 animate-in fade-in zoom-in-95 duration-300">
+          <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 animate-pulse" />
+          <p className="text-sm font-bold text-red-800 dark:text-red-300">{error}</p>
+        </div>
+      )}
+
       <div className="space-y-2">
-        <label className="text-sm font-semibold ml-1">Neues Passwort</label>
-        <div className="relative">
-          <Lock className="absolute left-4 top-3.5 h-4 w-4 text-gray-400" />
+        <label className="text-xs font-black uppercase text-slate-500 dark:text-slate-400 tracking-widest ml-1">
+          Neues Passwort
+        </label>
+        <div className="relative group/input">
+          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within/input:text-indigo-600 transition-colors" />
           <input
             type="password"
             required
             minLength={8}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full h-12 pl-11 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-            placeholder="Mindestens 8 Zeichen"
+            placeholder="Mind. 8 Zeichen"
+            className="w-full h-14 pl-12 pr-5 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-bold text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all dark:text-white placeholder:text-slate-400 placeholder:font-normal"
           />
         </div>
       </div>
+
       <div className="space-y-2">
-        <label className="text-sm font-semibold ml-1">Passwort bestätigen</label>
-        <div className="relative">
-          <Lock className="absolute left-4 top-3.5 h-4 w-4 text-gray-400" />
+        <label className="text-xs font-black uppercase text-slate-500 dark:text-slate-400 tracking-widest ml-1">
+          Passwort bestätigen
+        </label>
+        <div className="relative group/input">
+          <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within/input:text-indigo-600 transition-colors" />
           <input
             type="password"
             required
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="w-full h-12 pl-11 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
             placeholder="Passwort wiederholen"
+            className="w-full h-14 pl-12 pr-5 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 font-bold text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all dark:text-white placeholder:text-slate-400 placeholder:font-normal"
           />
         </div>
       </div>
 
-      {error && (
-        <div className="p-3 bg-red-50 text-red-600 rounded-lg text-xs font-medium flex gap-2 items-center">
-          <AlertCircle className="w-4 h-4" /> {error}
-        </div>
-      )}
-
       <button
         type="submit"
         disabled={loading}
-        className="w-full h-12 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-500/20 hover:bg-blue-700 transition flex items-center justify-center gap-2"
+        className="group/submit relative w-full h-14 overflow-hidden rounded-2xl transition-all hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100 mt-2"
       >
-        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Passwort speichern"}
+        <div className="absolute inset-0 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-indigo-700 via-purple-700 to-pink-700 opacity-0 group-hover/submit:opacity-100 transition-opacity"></div>
+        <div className="relative flex items-center justify-center gap-2 text-white font-black text-sm uppercase tracking-widest">
+          {loading ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            <>
+              <Shield className="w-5 h-5" />
+              Passwort speichern
+            </>
+          )}
+        </div>
       </button>
     </form>
   );
@@ -123,25 +193,52 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <main className="min-h-screen flex items-center justify-center bg-white dark:bg-gray-950 p-4">
-      <div className="w-full max-w-[440px]">
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-600 rounded-2xl text-white mb-6">
-            <Lock className="w-7 h-7" />
-          </div>
-          <h1 className="text-3xl font-extrabold tracking-tight">Neues Passwort</h1>
-          <p className="text-gray-500 dark:text-gray-400">Vergib jetzt ein sicheres, neues Passwort für deinen Account.</p>
-        </div>
+    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-indigo-50/30 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950/20 p-4 font-sans text-slate-900 dark:text-slate-100 relative overflow-hidden">
+      {/* Animated Background Gradients */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-indigo-400/20 to-purple-400/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-br from-pink-400/15 to-rose-400/15 rounded-full blur-3xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-gradient-to-br from-blue-400/10 to-cyan-400/10 rounded-full blur-3xl animate-pulse delay-500"></div>
+      </div>
 
-        <Suspense fallback={<div className="flex justify-center"><Loader2 className="animate-spin" /></div>}>
-          <ResetPasswordForm />
-        </Suspense>
+      {/* Main Card */}
+      <div className="w-full max-w-md relative z-10">
+        <div className="relative group">
+          {/* Glow Effect */}
+          <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500/20 via-purple-500/20 to-pink-500/20 rounded-3xl blur-xl opacity-75 group-hover:opacity-100 transition-all duration-500"></div>
 
-        <div className="mt-12 flex flex-col items-center gap-4 opacity-30 grayscale">
-          <div className="h-[1px] w-12 bg-gray-400"></div>
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4" />
-            <span className="text-[10px] uppercase tracking-[0.2em] font-black">Secure Data Processing</span>
+          {/* Card */}
+          <div className="relative bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl rounded-3xl border-2 border-slate-200/50 dark:border-slate-800/50 shadow-2xl p-10">
+            {/* Header */}
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center mb-6">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-3xl blur-lg opacity-50 animate-pulse"></div>
+                  <div className="relative w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-3xl flex items-center justify-center text-white shadow-lg shadow-indigo-500/50">
+                    <Lock className="w-8 h-8" />
+                  </div>
+                </div>
+              </div>
+              <h1 className="text-4xl font-black tracking-tight bg-gradient-to-r from-slate-900 via-indigo-900 to-slate-900 dark:from-white dark:via-indigo-200 dark:to-white bg-clip-text text-transparent mb-3">
+                Neues Passwort
+              </h1>
+              <p className="text-slate-600 dark:text-slate-400 text-sm">
+                Vergib jetzt ein sicheres, neues Passwort für deinen Account
+              </p>
+            </div>
+
+            <Suspense
+              fallback={
+                <div className="flex justify-center py-12">
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full blur-md opacity-50 animate-pulse"></div>
+                    <Loader2 className="relative w-8 h-8 text-indigo-600 dark:text-indigo-400 animate-spin" />
+                  </div>
+                </div>
+              }
+            >
+              <ResetPasswordForm />
+            </Suspense>
           </div>
         </div>
       </div>

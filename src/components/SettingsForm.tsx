@@ -381,21 +381,21 @@ export default function SettingsForm() {
           <div className="p-8 space-y-6">
             {/* Marketing Emails */}
             <div className="group/item relative p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-start gap-4 flex-1">
-                  <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-4 flex-1 min-w-0">
+                  <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex-shrink-0">
                     <Mail className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <p className="font-bold text-sm text-slate-900 dark:text-white mb-1">
                       {t("notifications.marketing")}
                     </p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 break-words">
                       {t("notifications.marketingDesc")}
                     </p>
                   </div>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
+                <label className="relative inline-flex items-center cursor-pointer flex-shrink-0 self-start sm:self-center">
                   <input
                     type="checkbox"
                     checked={notifications.marketing}
@@ -412,21 +412,21 @@ export default function SettingsForm() {
 
             {/* Product Updates */}
             <div className="group/item relative p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-start gap-4 flex-1">
-                  <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-4 flex-1 min-w-0">
+                  <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex-shrink-0">
                     <Mail className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <p className="font-bold text-sm text-slate-900 dark:text-white mb-1">
                       {t("notifications.updates")}
                     </p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 break-words">
                       {t("notifications.updatesDesc")}
                     </p>
                   </div>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
+                <label className="relative inline-flex items-center cursor-pointer flex-shrink-0 self-start sm:self-center">
                   <input
                     type="checkbox"
                     checked={notifications.updates}
@@ -443,21 +443,21 @@ export default function SettingsForm() {
 
             {/* Security Alerts */}
             <div className="group/item relative p-6 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-start gap-4 flex-1">
-                  <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-xl">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-start gap-4 flex-1 min-w-0">
+                  <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex-shrink-0">
                     <Mail className="w-5 h-5 text-purple-600 dark:text-purple-400" />
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <p className="font-bold text-sm text-slate-900 dark:text-white mb-1">
                       {t("notifications.security")}
                     </p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 break-words">
                       {t("notifications.securityDesc")}
                     </p>
                   </div>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
+                <label className="relative inline-flex items-center cursor-pointer flex-shrink-0 self-start sm:self-center">
                   <input
                     type="checkbox"
                     checked={notifications.security}
